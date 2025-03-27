@@ -1,0 +1,52 @@
+name: kelola_kos
+description: A new Flutter project.
+
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  get: ^4.6.6
+  
+  # UI
+  flutter_screenutil: ^5.9.0
+  google_fonts: ^6.2.1
+
+  change_app_package_name: ^1.1.0
+
+  # Signature
+  fast_rsa: ^3.6.1
+
+  # Logger
+  sentry_flutter: ^7.18.0
+  mason: ^0.1.0-dev.57
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+  flutter_svg: ^2.0.17
+  firebase_core: ^3.12.1
+  firebase_auth: ^5.5.1
+  cloud_firestore: ^5.6.5
+  dio: ^5.8.0+1
+  hive_flutter: ^1.1.0
+  flutter_animate: ^4.5.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.1
+
+flutter:
+  assets:
+    - assets/
+    - assets/svg/
+  uses-material-design: true
+

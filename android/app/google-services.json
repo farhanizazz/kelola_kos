@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "526314029482",
+    "project_id": "kelola-kos",
+    "storage_bucket": "kelola-kos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:526314029482:android:d5e6fe78b06150951babd3",
+        "android_client_info": {
+          "package_name": "com.farhan.kelolakos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "526314029482-k0lkj8v89jm03mn46ubqkb2f6s4dus1e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.farhan.kelolakos",
+            "certificate_hash": "3fd0afadc7b70f61616a40a729fe7cef23d94d13"
+          }
+        },
+        {
+          "client_id": "526314029482-85n5mbfbg01il53vqp6hh61gsp3pamd0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-tGCL1jpS22TsoHPWAF5ZIJuluDBxIow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "526314029482-85n5mbfbg01il53vqp6hh61gsp3pamd0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "526314029482-utm94sfq94reujbnie0q3utlpe0h2pb7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.venturoCore"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

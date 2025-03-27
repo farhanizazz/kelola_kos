@@ -1,0 +1,120 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:kelola_kos/shared/widgets/loading_bar.dart';
+import 'dart:developer';
+import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
+
+class FirestoreService extends GetxService {
+  static FirestoreService get to => Get.find<FirestoreService>();
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// Called when the service is initialized
+  @override
+  void onInit() {
+    log('[FirestoreService] Initialized');
+    super.onInit();
+  }
+
+  /// Logs Firestore actions
+  void _log(String message, {dynamic error}) {
+    if (error != null) {
+      log('[Firestore ERROR] $message: $error');
+      showErrorBottomSheet("Error", error.toString());
+    } else {
+      log('[Firestore SUCCESS] $message');
+    }
+  }
+
+  void _showLoading() {
+    Get.bottomSheet(
+      const SizedBox(
+        height: 150,
+        child: LoadingBar(),
+      ),
+      isDismissible: false,
+    );
+  }
+
+  void _hideLoading() {
+    if (Get.isBottomSheetOpen == true) {
+      Get.back();
+    }
+  }
+
+  /// Creates or updates a document
+  Future<void> setDocument(
+      String collectionPath, String? docId, Map<String, dynamic> data,
+      {bool merge = true}) async {
+    try {
+      _showLoading();
+      await _firestore.collection(collectionPath).doc(docId).set(
+        data,
+        SetOptions(merge: merge),
+      );
+      _hideLoading();
+      _log('Document set in $collectionPath/$docId');
+    } catch (e) {
+      _hideLoading();
+      _log('Failed to set document in $collectionPath/$docId', error: e);
+    }
+  }
+
+  /// Updates specific fields in a document
+  Future<void> updateDocument(
+      String collectionPath, String docId, Map<String, dynamic> data) async {
+    try {
+      _showLoading();
+      await _firestore.collection(collectionPath).doc(docId).update(data);
+      _log('Document updated in $collectionPath/$docId');
+      _hideLoading();
+    } catch (e) {
+      _hideLoading();
+      _log('Failed to update document in $collectionPath/$docId', error: e);
+    }
+  }
+
+  /// Deletes a document
+  Future<void> deleteDocument(String collectionPath, String docId) async {
+    try {
+      await _firestore.collection(collectionPath).doc(docId).delete();
+      _log('Document deleted in $collectionPath/$docId');
+    } catch (e) {
+      _log('Failed to delete document in $collectionPath/$docId', error: e);
+    }
+  }
+
+  /// Fetches a single document by ID
+  Future<DocumentSnapshot?> getDocument(String collectionPath, String docId) async {
+    try {
+      DocumentSnapshot doc = await _firestore.collection(collectionPath).doc(docId).get();
+      if (doc.exists) {
+        _log('Fetched document from $collectionPath/$docId');
+        return doc;
+      } else {
+        _log('Document does not exist in $collectionPath/$docId');
+        return null;
+      }
+    } catch (e) {
+      _log('Failed to fetch document from $collectionPath/$docId', error: e);
+      return null;
+    }
+  }
+
+  /// Fetches all documents from a collection
+  Future<List<QueryDocumentSnapshot>> getCollection(String collectionPath) async {
+    try {
+      QuerySnapshot snapshot = await _firestore.collection(collectionPath).get();
+      _log('Fetched collection from $collectionPath');
+      return snapshot.docs;
+    } catch (e) {
+      _log('Failed to fetch collection from $collectionPath', error: e);
+      return [];
+    }
+  }
+
+  CollectionReference<Map<String, dynamic>> streamCollection(String collectionPath) {
+    return _firestore.collection(collectionPath);
+  }
+}
