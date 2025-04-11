@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -90,7 +88,7 @@ class ResidentListScreen extends StatelessWidget {
                         contentPadding: EdgeInsets.zero,
                         title: Text(resident.name),
                         subtitle: Text(
-                            "${GlobalService.dorms.firstWhere((dorm) => dorm.id == resident.dormId).name}, Dorm 1"),
+                            "${GlobalService.dorms.firstWhere((dorm) => dorm.id == resident.dormId).name}, ${GlobalService.rooms.firstWhere((room) => room.id == resident.roomId).roomName}"),
                         trailing: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,

@@ -1,15 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/configs/routes/route.dart';
 import 'package:kelola_kos/constants/asset_constant.dart';
+import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/features/dashboard/constants/dashboard_assets_constant.dart';
 import 'package:kelola_kos/features/dashboard/controllers/dashboard_controller.dart';
 import 'package:kelola_kos/features/navigation/controllers/navigation_controller.dart';
 import 'package:kelola_kos/features/splash/view/components/custom_card.dart';
 import 'package:kelola_kos/features/dashboard/views/components/custom_list_item.dart';
-import 'package:kelola_kos/utils/services/auth_service.dart';
+import 'package:kelola_kos/utils/services/global_service.dart';
+import 'package:kelola_kos/utils/services/local_storage_service.dart';
 
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({Key? key}) : super(key: key);
@@ -82,7 +85,7 @@ class DashboardScreen extends StatelessWidget {
             ),
             32.verticalSpace,
             Text(
-              'Kos Anda',
+              'Kos Anda ${kDebugMode ? LocalStorageService.box.get(LocalStorageConstant.USER_ID) : ''}',
               style: Get.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Get.theme.colorScheme.onSurface,
@@ -136,8 +139,8 @@ class DashboardScreen extends StatelessWidget {
                           arguments: dorm.id),
                       image: dorm.image!,
                       dormName: dorm.name,
-                      maxResident: dorm.roomCount,
-                      residentCount: dorm.residentCount,
+                      maxResident: GlobalService.rooms.where((room) => room.dormId == dorm.id).length,
+                      residentCount: GlobalService.residents.where((resident) => resident.dormId == dorm.id).length,
                     ),
                   );
                 },

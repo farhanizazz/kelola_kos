@@ -7,8 +7,6 @@ import 'package:kelola_kos/features/add_resident/repositories/add_resident_repos
 import 'package:kelola_kos/features/resident_list/models/resident.dart';
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
-import 'package:kelola_kos/shared/repositories/main_repository.dart';
-import 'package:kelola_kos/shared/widgets/loading_bar.dart';
 import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 
@@ -22,26 +20,42 @@ class AddResidentController extends GetxController {
   final TextEditingController noteController = TextEditingController();
   final TextEditingController dormController = TextEditingController();
   final TextEditingController roomController = TextEditingController();
+  final TextEditingController paymentDateController = TextEditingController();
+  final TextEditingController notificationIntervalController = TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final RxBool paymentStatus = false.obs;
+  final RxBool isEdit = false.obs;
+  final RxnInt payMonth = RxnInt(null);
+  final RxnInt payDay = RxnInt(null);
   late final Map<String, dynamic> arguments;
+  final Rx<Duration> notificationInterval = Duration(days: 30).obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     // TODO: implement onInit
     super.onInit();
     if (Get.arguments != null) {
       arguments = Get.arguments;
     }
-  }
-
-  @override
-  Future<void> onReady() async {
-    // TODO: implement onReady
-    super.onReady();
+    everAll([payDay, payMonth], (_)
+    {
+      // You might want to add a check to avoid 0 values (initial state)
+      if (payDay.value != null && payMonth.value != null) {
+        paymentDateController.text =
+        "${AddResidentRepository.days[payDay.value!].toString().padLeft(2, '0')} ${AddResidentRepository.months[payMonth.value!]}";
+      } else {
+        paymentDateController.text = '';
+      }
+    });
     if (arguments['resident'] != null) {
+      isEdit.value = true;
       final Resident resident = arguments['resident'];
       residentNameController.text = resident.name;
       residentPhoneController.text = resident.phone;
+      paymentStatus.value = resident.paymentStatus;
+      payDay.value = resident.paymentDay - 1;
+      payMonth.value = resident.paymentMonth - 1;
+      notificationInterval.value = resident.recurrenceInterval;
     }
     if (arguments['dormId'] != null && arguments['roomId'] != null) {
       log(arguments.toString(), name: "Add resident argument");
@@ -54,29 +68,36 @@ class AddResidentController extends GetxController {
     }
   }
 
-  Future<void> _getRoom(String roomId) async {
+  Future<void> _getRoom(String dormId) async {
     try {
-      Get.bottomSheet(
-        const SizedBox(
-          height: 150,
-          child: LoadingBar(),
-        ),
-        isDismissible: false,
-      );
-      final allRoom = await GlobalService.fetchRooms(roomId);
-      rooms.value = allRoom.where((room) {
-        if (!room.occupied) {
-          if(Get.arguments != null) {
-            if(room.id == arguments['roomId']) {
-              log(arguments['roomId'], name: "Selected room");
+      rooms.value = GlobalService.rooms.where((room) {
+        if (room.dormId != dormId) return false;
+        if (Get.arguments != null) {
+          if (arguments['resident'] != null) {
+            final Resident? currentResident = arguments['resident'];
+            if (currentResident!.roomId == room.id) {
               return true;
             }
           }
-          return true;
         }
-        return false;
+        if (GlobalService.residents
+            .where((resident) => resident.roomId == room.id)
+            .isNotEmpty) return false;
+        return true;
       }).toList();
-      log(rooms.toString());
+      // rooms.value = allRoom.where((room) {
+      //   if (GlobalService.isNotEmpty ?? false) {
+      //     if(Get.arguments != null) {
+      //       if(room.id == arguments['roomId']) {
+      //         log(arguments['roomId'], name: "Selected room");
+      //         return true;
+      //       }
+      //     }
+      //     return true;
+      //   }
+      //   return false;
+      // }).toList();
+      log(rooms.toString(), name: 'Rooms');
     } catch (e, st) {
       log(e.toString(), name: "Error");
       log(st.toString(), name: "Stacktrace");
@@ -109,15 +130,18 @@ class AddResidentController extends GetxController {
   }
 
   Future<void> addResident() async {
-    final resident = Resident(
-      id: '',
-      name: residentNameController.text,
-      phone: residentPhoneController.text,
-      roomId: selectedRoom.value,
-      dormId: selectedDorm.value,
-      paymentStatus: false,
-    );
     if (_validateForm()) {
+      final resident = Resident(
+        id: '',
+        name: residentNameController.text,
+        phone: residentPhoneController.text,
+        roomId: selectedRoom.value,
+        dormId: selectedDorm.value,
+        paymentMonth: payMonth.value! + 1,
+        paymentDay: payDay.value! + 1,
+        paymentStatus: paymentStatus.value,
+        recurrenceInterval: notificationInterval.value
+      );
       if (selectedDorm.value == '' || selectedRoom.value == '') {
         showErrorBottomSheet(
             "Error", "Tolong pilih kos atau ruangan yang akan ditempati");
@@ -125,30 +149,38 @@ class AddResidentController extends GetxController {
       }
       try {
         if (Get.arguments != null) {
-          final Resident? resident = arguments['resident'];
-          if (resident != null) {
-            final response = await AddResidentRepository.updateResident(
+          final Resident? currentResident = arguments['resident'];
+          if (currentResident != null) {
+            await AddResidentRepository.updateResident(
               dormId: selectedDorm.value,
               roomId: selectedRoom.value,
-              residentId: resident.id,
+              residentId: currentResident.id,
               resident: resident,
             );
-            if (response.data['status'] == '200') {
-              if (Get.isBottomSheetOpen != true) {
-                Get.back();
-              }
+            Future.delayed(Duration(milliseconds: 300), () {
+              Get.back();
+            });
+          } else {
+            try {
+              await AddResidentRepository.addResident(
+                  selectedDorm.value, selectedRoom.value, resident);
+            } catch (e, st) {
+              log(e.toString(), name: 'Add Resident Error');
+              log(st.toString(), name: 'Stacktrace');
             }
+            log('Sukses');
+            Future.delayed(Duration(milliseconds: 300), () {
+              Get.back();
+            });
           }
         } else {
-          final response = await AddResidentRepository.addResident(
+          await AddResidentRepository.addResident(
               selectedDorm.value, selectedRoom.value, resident);
-          if (response.data['status'] == '200') {
-            // GlobalService.refreshData();
-            if (Get.isBottomSheetOpen != true) {
-              Get.back();
-            }
+          if (Get.isBottomSheetOpen != true) {
+            Get.back();
           }
         }
+        GlobalService.residents.refresh();
       } catch (e, st) {
         log(e.toString(), name: 'Add Resident Error');
         log(st.toString(), name: 'Stacktrace');

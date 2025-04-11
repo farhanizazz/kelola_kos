@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/features/add_room/repositories/add_room_repository.dart';
-import 'package:kelola_kos/features/detail_dorm/controllers/detail_dorm_controller.dart';
 import 'package:kelola_kos/shared/models/room.dart';
 
 class AddRoomController extends GetxController {
@@ -87,14 +86,11 @@ class AddRoomController extends GetxController {
               id: room.value!.id,
               dormId: room.value!.dormId,
               roomName: roomNameController.text,
-              price: double.parse(priceController.text),
+              price: int.parse(priceController.text),
               notes: notesController.text,
-              occupied: room.value!.occupied,
             ),
           );
-          if (res.data['status']) {
-            Get.back(result: true);
-          }
+          Get.back(result: true);
         } catch (e, st) {
           log(e.toString());
           log(st.toString());
@@ -105,37 +101,35 @@ class AddRoomController extends GetxController {
 
   Future<void> addRoom() async {
     final isValid = AddRoomController.to.validateForm();
-    if (dormId.value == null) {
-      if (isValid) {
+    if (isValid) {
+      if (dormId.value == null) {
         Get.back(
           result: Room(
             roomName: AddRoomController.to.roomNameController.text,
-            price: double.parse(AddRoomController.to.priceController.text),
+            price: int.parse(AddRoomController.to.priceController.text),
             notes: AddRoomController.to.notesController.text,
-            occupied: false,
           ),
         );
-      }
-    } else {
-      try {
-        log("Before repository call");
-        await AddRoomRepository.addRoom(
-            dormId: int.parse(dormId.value!),
-            rooms: [
-              Room(
+      } else {
+        try {
+          log("Before repository call");
+          await AddRoomRepository.addRoom(
+              dormId: dormId.value!,
+              rooms: [
+                Room(
                   roomName: AddRoomController.to.roomNameController.text,
                   price:
-                      double.parse(AddRoomController.to.priceController.text),
+                      int.parse(AddRoomController.to.priceController.text),
                   notes: AddRoomController.to.notesController.text,
-                  occupied: false),
-            ]);
-        log("After repository call");
-      } catch (e, st) {
-        log(e.toString());
-        log(st.toString());
-      } finally {
-        Get.delete<AddRoomController>();
-        Get.back(result: true);
+                ),
+              ]);
+          log("After repository call");
+        } catch (e, st) {
+          log(e.toString());
+          log(st.toString());
+        } finally {
+          Get.back(result: true);
+        }
       }
     }
   }

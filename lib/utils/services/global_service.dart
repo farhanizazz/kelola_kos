@@ -1,57 +1,152 @@
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
+import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/features/resident_list/models/resident.dart';
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
+import 'package:kelola_kos/utils/services/notification_service.dart';
+
+import 'local_storage_service.dart';
 
 class GlobalService extends GetxService {
-  static final RxList<Dorm> dorms = <Dorm>[].obs;
-  static final RxList<Resident> residents = <Resident>[].obs;
+  static RxList<Dorm> dorms = <Dorm>[].obs;
+  static RxList<Resident> residents = <Resident>[].obs;
+  static RxList<Room> rooms = <Room>[].obs;
+  static final FirestoreService firestoreClient = FirestoreService();
+
 
   @override
   void onInit() async {
     // TODO: implement onInit
-    await fetchDorms();
-    await fetchResidents();
+    ever(dorms, (value) {
+      log(value.toString(), name: 'GlobalService Dorms');
+    });
+    ever(residents, (value) {
+      log(residents.toString(), name: 'GlobalService Resident');
+    });
+    ever(rooms, (value) {
+      log(rooms.toString(), name: 'GlobalService Room');
+    });
     super.onInit();
   }
 
-  static Future<void> fetchDorms() async {
+  static void bindDormsStream() {
+    log('Binding dorms with userId: $userId', name: 'DormStream');
+    dorms.bindStream(
+      firestoreClient
+          .collection('Dorms')
+          .where('userId', isEqualTo: userId)
+          .snapshots()
+          .map((QuerySnapshot snapshot) {
+        return snapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return Dorm.fromMap(
+              {...data, 'id': doc.id}); // ensure `id` is included if needed
+        }).toList();
+      }),
+    );
+  }
+
+  static void bindRoomStream() {
     try {
-      final data = await _MainRepository.getDorms();
-      dorms.assignAll(data);
-      log(dorms.toString());
+      log('Binding rooms with userId: $userId', name: 'RoomStream');
+      rooms.bindStream(
+        firestoreClient
+            .collection('Rooms')
+            .orderBy('roomName', descending: false)
+            .where('userId', isEqualTo: userId)
+            .snapshots()
+            .handleError((error) => log('Stream error: $error'))
+            .map((QuerySnapshot snapshot) {
+          return snapshot.docs
+              .map((doc) {
+                try {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final newRoom = Room.fromMap({...data, 'id': doc.id});
+                  return newRoom;
+                } catch (e, st) {
+                  log('Room parsing failed: $e');
+                  log('Stacktrace: $st');
+                }
+              })
+              .whereType<Room>()
+              .toList();
+        }),
+      );
     } catch (e, st) {
-      log("Error fetching dorms: $e");
-      log(st.toString(), name: 'Stacktrace');
+      log('Error binding room, Error: $e');
+      log('Stacktrace: $st');
     }
   }
 
-  static Future<void> fetchResidents() async {
+  static void bindResidentStream() {
     try {
-      final data = await _MainRepository.getResidents();
-      residents.assignAll(data);
+      log('Binding resident with userId: $userId', name: 'ResidentStream');
+      residents.bindStream(
+        firestoreClient
+            .collection('Residents')
+            .where('userId', isEqualTo: userId)
+            .snapshots()
+            .handleError((error) => log('Stream error: $error'))
+            .map((QuerySnapshot snapshot) {
+          final list = snapshot.docs
+              .map((doc) {
+                try {
+                  final data = doc.data() as Map<String, dynamic>;
+                  return Resident.fromMap({...data, 'id': doc.id});
+                } catch (e, st) {
+                  log('Room parsing failed: $e');
+                  log('Stacktrace: $st');
+                }
+              })
+              .whereType<Resident>()
+              .toList();
+
+          for (final r in list) {
+            final id = r.id.hashCode;
+            NotificationService().cancel(id);
+            NotificationService().scheduleWithPermissionGuard(
+              id: id,
+              day: r.paymentDay,
+              month: r.paymentMonth,
+              residentName: r.name,
+              notificationInterval: r.recurrenceInterval,
+            );
+          }
+
+          return list;
+        }),
+      );
     } catch (e, st) {
-      log("Error fetching residents: $e");
-      log(st.toString(), name: 'Stacktrace');
+      log('Error binding room, Error: $e');
+      log('Stacktrace: $st');
     }
   }
 
-  static Future<List<Room>> fetchRooms(String dormId) async {
+  static void unbindStreams() {
     try {
-      return await _MainRepository.getRooms(dormId);
-    } catch (e) {
-      log("Error fetching rooms: $e");
-      rethrow;
+      dorms.close();
+      rooms.close();
+      residents.close();
+
+      dorms = <Dorm>[].obs;
+      rooms = <Room>[].obs;
+      residents = <Resident>[].obs;
+
+      log('Streams unbound and data cleared.', name: 'GlobalService');
+    } catch (e, st) {
+      log('Failed to unbind streams: $e', name: 'GlobalService');
+      log(st.toString());
     }
   }
 
-  static void refreshData() {
-    fetchDorms();
-    fetchResidents();
-  }
+  static String? get userId => LocalStorageService.box.get(LocalStorageConstant.USER_ID);
 }
 
 // Private repository inside MainService
@@ -63,16 +158,16 @@ class _MainRepository {
 
   static Future<List<Dorm>> getDorms() async {
     final res = await httpClient.get('/users/$userId/dorms');
-    return (res.data as List<dynamic>).map((dorm) => Dorm.fromMap(dorm)).toList();
+    return (res.data as List<dynamic>)
+        .map((dorm) => Dorm.fromMap(dorm))
+        .toList();
   }
 
   static Future<List<Resident>> getResidents() async {
     final res = await httpClient.get('/users/$userId/resident');
     final List<dynamic> dorms = res.data;
 
-    return dorms
-        .map((resident) => Resident.fromMap(resident))
-        .toList();
+    return dorms.map((resident) => Resident.fromMap(resident)).toList();
   }
 
   static Future<List<Room>> getRooms(String dormId) async {
@@ -80,5 +175,14 @@ class _MainRepository {
     final List<dynamic> rooms = res.data['rooms'];
 
     return rooms.map((room) => Room.fromMap(room)).toList();
+  }
+}
+
+Future<void> requestExactAlarmPermission() async {
+  if (Platform.isAndroid) {
+    const intent = AndroidIntent(
+      action: 'android.settings.REQUEST_SCHEDULE_EXACT_ALARM',
+    );
+    await intent.launch();
   }
 }

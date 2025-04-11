@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/shared/widgets/loading_bar.dart';
 import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
-import 'package:kelola_kos/utils/services/global_service.dart';
 
 class HttpService extends GetxService {
   HttpService._();
@@ -111,9 +110,6 @@ class HttpService extends GetxService {
         log('==============================================');
         log('${response.data}', name: 'RESPONSE');
         log('==============================================');
-        if(response.requestOptions.method == 'POST' || response.requestOptions.method == 'DELETE' || response.requestOptions.method == 'PUT') {
-          GlobalService.refreshData();
-        }
         _hideLoading();
 
         return handler.resolve(response);

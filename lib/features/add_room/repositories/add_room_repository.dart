@@ -1,9 +1,10 @@
-import 'dart:convert';
+import 'dart:developer';
 
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/features/add_room/constants/add_room_api_constant.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
 
@@ -11,37 +12,39 @@ class AddRoomRepository {
   AddRoomRepository._();
 
   static final httpClient = HttpService.dioCall();
+  static final FirestoreService firestoreClient = FirestoreService.to;
 
-  // static final userId = LocalStorageService.box.get(LocalStorageConstant.USER_ID);
-  static const userId = 1;
 
-  static Future<Response> addRoom({
-    required int dormId,
+  static final userId = LocalStorageService.box.get(LocalStorageConstant.USER_ID);
+  // static const userId = 1;
+
+  static Future<void> addRoom({
+    required String dormId,
     required List<Room> rooms,
   }) async {
-    if (rooms.length == 1) {
-      final res = await httpClient.post('/users/$userId/dorms/$dormId/rooms',
-          data: rooms[0].toMap());
-      return res;
-    } else {
-      final res = await httpClient.post(
-        '/users/$userId/dorms/$dormId/rooms',
-        data: rooms.map((room) {
-          final newRoom = room.copyWith(dormId: dormId.toString());
-          return newRoom.toMap();
-        }).toList(),
-      );
-      return res;
+    final batch = FirebaseFirestore.instance.batch();
+    final roomsCollection = firestoreClient.collection("Rooms");
+
+    for (var room in rooms) {
+      final docRef = roomsCollection.doc();
+      final roomData = room.copyWith(dormId: dormId.toString()).toMap(userId: userId);
+      batch.set(docRef, {...roomData, 'createdAt': FieldValue.serverTimestamp()});
     }
+
+    await batch.commit();
   }
 
-  static Future<Response> updateRoom({
+  static Future<void> updateRoom({
     required String dormId,
     required Room room,
   }) async {
-    final res = await httpClient.put('/users/$userId/dorms/$dormId/rooms/${room.id}',
-        data: room.toMap());
-    return res;
+    try {
+      final roomRef = FirebaseFirestore.instance.collection('Rooms').doc(room.id);
+      await firestoreClient.updateDocument('Rooms', roomRef.id,room.toMap());
+    } catch (e) {
+      log('Error updating room: $e');
+      rethrow;
+    }
   }
 
   var apiConstant = AddRoomApiConstant();

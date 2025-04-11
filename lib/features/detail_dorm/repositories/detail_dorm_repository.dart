@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:kelola_kos/features/detail_dorm/constants/detail_dorm_api_constant.dart';
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/services/global_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
 
 class DetailDormRepository {
@@ -13,8 +14,7 @@ class DetailDormRepository {
 
   static Future<Dorm> getDorm(String id) async {
     try {
-      final res = await httpClient.get('/users/$userId/dorms/$id');
-      return Dorm.fromMap(res.data);
+      return GlobalService.dorms.where((dorm) => dorm.id == id).first;
     } catch (e, st) {
       log(e.toString());
       log(st.toString());
@@ -24,16 +24,8 @@ class DetailDormRepository {
 
   static Future<List<Room>> getRoom(String dormId) async {
     try {
-      final res = await httpClient.get('/users/$userId/dorms/$dormId/rooms');
-
-      // Ensure the response is a List before mapping
-      if (res.data is List) {
-        return (res.data as List)
-            .map((room) => Room.fromMap(room as Map<String, dynamic>))
-            .toList();
-      } else {
-        throw Exception("Unexpected response format: ${res.data}");
-      }
+      log(GlobalService.rooms.toString(), name: 'Room in detail room repo');
+      return GlobalService.rooms.where((room) => room.dormId == dormId).toList();
     } catch (e, st) {
       log(e.toString());
       log(st.toString());

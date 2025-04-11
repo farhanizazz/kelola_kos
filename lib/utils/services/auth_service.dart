@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/configs/routes/route.dart';
@@ -8,6 +7,7 @@ import 'package:kelola_kos/shared/models/user.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
+import 'package:workmanager/workmanager.dart';
 
 class AuthService extends GetxService {
   static AuthService get to => Get.find<AuthService>();
@@ -25,7 +25,11 @@ class AuthService extends GetxService {
   Future<void> _handleAuthChanged(User? user) async {
     if (user == null) {
       Get.offAllNamed(Routes.loginRoute);
+      GlobalService.unbindStreams();
       await LocalStorageService.deleteAuth();
+      await Workmanager().cancelAll().then((value) {
+        log('Workmanager Cancelled');
+      });
     } else {
       try {
         final user = FirebaseAuth.instance.currentUser;
@@ -38,6 +42,9 @@ class AuthService extends GetxService {
           final firestoreUser = FirestoreUser.fromMap(user.uid, data);
 
           await LocalStorageService.setAuth(firestoreUser);
+          GlobalService.bindResidentStream();
+          GlobalService.bindRoomStream();
+          GlobalService.bindDormsStream();
         }
 
         Get.offAllNamed(Routes.navigationRoute);

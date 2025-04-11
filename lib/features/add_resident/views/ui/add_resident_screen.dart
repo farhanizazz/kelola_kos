@@ -1,9 +1,11 @@
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/features/add_resident/constants/add_resident_assets_constant.dart';
 import 'package:kelola_kos/features/add_resident/controllers/add_resident_controller.dart';
+import 'package:kelola_kos/features/add_resident/repositories/add_resident_repository.dart';
 
 class AddResidentScreen extends StatelessWidget {
   AddResidentScreen({Key? key}) : super(key: key);
@@ -19,7 +21,9 @@ class AddResidentScreen extends StatelessWidget {
           onPressed: () {
             AddResidentController.to.addResident();
           },
-          child: Text("Tambahkan Penghuni"),
+          child: Obx(() => Text(AddResidentController.to.isEdit.value
+              ? 'Ubah Penghuni'
+              : 'Tambahkan Penghuni')),
         ),
       ),
       body: Padding(
@@ -40,22 +44,29 @@ class AddResidentScreen extends StatelessWidget {
                         },
                         icon: Icon(Icons.arrow_back_ios_new)),
                     5.horizontalSpace,
-                    Text(
-                      'Tambah Penghuni',
-                      style: Get.textTheme.headlineLarge,
+                    Obx(
+                      () => Text(
+                        AddResidentController.to.isEdit.value
+                            ? 'Ubah Penghuni'
+                            : 'Tambah Penghuni',
+                        style: Get.textTheme.headlineLarge,
+                      ),
                     ),
                   ],
                 ),
                 14.verticalSpace,
                 TextFormField(
-                  decoration: InputDecoration(hintText: 'Nama Penghuni'),
+                  decoration: InputDecoration(
+                    label: Text('Nama Penghuni'),
+                  ),
                   controller: AddResidentController.to.residentNameController,
                   validator: AddResidentController.to.validateField,
                 ),
                 12.verticalSpace,
                 TextFormField(
-                  decoration:
-                      InputDecoration(hintText: 'Nomor Telepon Penghuni'),
+                  decoration: InputDecoration(
+                    label: Text('Nomor Telepon Penghuni'),
+                  ),
                   controller: AddResidentController.to.residentPhoneController,
                   validator: AddResidentController.to.validateField,
                 ),
@@ -66,7 +77,7 @@ class AddResidentScreen extends StatelessWidget {
                       controller: AddResidentController.to.dormController,
                       width: constraint.maxWidth,
                       initialSelection: null,
-                      hintText: 'Kos',
+                      label: Text('Kos'),
                       dropdownMenuEntries: AddResidentController.to.dorms
                           .map(
                             (dorm) => DropdownMenuEntry(
@@ -94,7 +105,7 @@ class AddResidentScreen extends StatelessWidget {
                             controller: AddResidentController.to.roomController,
                             width: constraint.maxWidth,
                             initialSelection: null,
-                            hintText: 'Ruangan',
+                            label: Text('Ruangan'),
                             dropdownMenuEntries: AddResidentController.to.rooms
                                 .map(
                                   (room) => DropdownMenuEntry(
@@ -116,9 +127,179 @@ class AddResidentScreen extends StatelessWidget {
                 ),
                 12.verticalSpace,
                 TextFormField(
+                  decoration: InputDecoration(
+                    label: Text('Tanggal Masuk'),
+                    hintText: 'Tanggal Masuk',
+                  ),
+                  controller: AddResidentController.to.paymentDateController,
+                  readOnly: true,
+                  onTap: () {
+                    int selectedDay = 0;
+                    int selectedMonth = 0;
+                    showCupertinoModalPopup(
+                      context: context,
+                      builder: (BuildContext context) => Container(
+                        height: 216,
+                        padding: const EdgeInsets.only(top: 6.0),
+                        margin: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom),
+                        color: CupertinoColors.systemBackground
+                            .resolveFrom(context),
+                        child: SafeArea(
+                          top: false,
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Obx(
+                                      () => Expanded(
+                                        child: CupertinoPicker(
+                                          magnification: 1.22,
+                                          squeeze: 1.2,
+                                          useMagnifier: true,
+                                          itemExtent: 32,
+                                          scrollController:
+                                              FixedExtentScrollController(
+                                            initialItem: AddResidentController
+                                                        .to.payDay.value !=
+                                                    null
+                                                ? AddResidentController
+                                                    .to.payDay.value!
+                                                : 0,
+                                          ),
+                                          onSelectedItemChanged:
+                                              (int selectedItem) {
+                                            selectedDay = selectedItem;
+                                          },
+                                          children: List<Widget>.generate(
+                                              AddResidentRepository.days.length,
+                                              (int index) {
+                                            return Center(
+                                                child: Text(
+                                                    AddResidentRepository
+                                                        .days[index]));
+                                          }),
+                                        ),
+                                      ),
+                                    ),
+                                    Obx(
+                                      () => Expanded(
+                                        child: CupertinoPicker(
+                                          magnification: 1.22,
+                                          squeeze: 1.2,
+                                          useMagnifier: true,
+                                          itemExtent: 32,
+                                          scrollController:
+                                              FixedExtentScrollController(
+                                            initialItem: AddResidentController
+                                                        .to.payMonth.value !=
+                                                    null
+                                                ? AddResidentController
+                                                    .to.payMonth.value!
+                                                : 0,
+                                          ),
+                                          onSelectedItemChanged:
+                                              (int selectedItem) {
+                                            selectedMonth = selectedItem;
+                                          },
+                                          children: List<Widget>.generate(
+                                              AddResidentRepository
+                                                  .months.length, (int index) {
+                                            return Center(
+                                                child: Text(
+                                                    AddResidentRepository
+                                                        .months[index]));
+                                          }),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: FilledButton(
+                                    onPressed: () {
+                                      AddResidentController.to.payDay.value =
+                                          selectedDay;
+                                      AddResidentController.to.payMonth.value =
+                                          selectedMonth;
+                                      Get.back();
+                                    },
+                                    child: Text('Simpan')),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  validator: AddResidentController.to.validateField,
+                ),
+                12.verticalSpace,
+                TextFormField(
                   decoration: InputDecoration(hintText: "Catatan (Optional)"),
                   maxLines: 5,
-                )
+                ),
+                12.verticalSpace,
+                Obx(
+                  () => Visibility(
+                    visible: AddResidentController.to.isEdit.value,
+                    child: Row(
+                      children: [
+                        Switch(
+                            value: AddResidentController.to.paymentStatus.value,
+                            onChanged: (value) {
+                              AddResidentController.to.paymentStatus.value =
+                                  !AddResidentController.to.paymentStatus.value;
+                            }),
+                        5.horizontalSpace,
+                        Text('Status Pembayaran')
+                      ],
+                    ),
+                  ),
+                ),
+                12.verticalSpace,
+                Column(
+                  children: [
+                    12.verticalSpace,
+                    LayoutBuilder(builder: (context, constraint) {
+                      return Obx(
+                        () => DropdownMenu(
+                          controller: AddResidentController.to.notificationIntervalController,
+                          width: constraint.maxWidth,
+                          initialSelection: AddResidentController.to.notificationInterval.value,
+                          label: Text('Ingatkan Setiap'),
+                          dropdownMenuEntries: [
+                            DropdownMenuEntry(
+                              value: Duration(days: 30),
+                              label: '1 Bulan sekali',
+                            ),
+                            DropdownMenuEntry(
+                              value: Duration(days: 90),
+                              label: '3 Bulan sekali',
+                            ),
+                            DropdownMenuEntry(
+                              value: Duration(days: 180),
+                              label: '6 Bulan sekali',
+                            ),
+                            DropdownMenuEntry(
+                              value: Duration(days: 360),
+                              label: '1 Tahun sekali',
+                            ),
+                          ],
+                          onSelected: (value) {
+                            if (value != null) {
+                              AddResidentController
+                                  .to.notificationInterval.value = value;
+                            }
+                          },
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ],
             ),
           ),

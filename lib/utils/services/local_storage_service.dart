@@ -1,12 +1,10 @@
-import 'dart:convert';
 import 'dart:developer';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:kelola_kos/constants/local_storage_constant.dart';
+import 'package:kelola_kos/shared/models/scheduled_notification.dart';
 import 'package:kelola_kos/shared/models/user.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 class LocalStorageService extends GetxService {
   LocalStorageService._();
@@ -27,5 +25,68 @@ class LocalStorageService extends GetxService {
   static Future deleteAuth() async {
     box.clear();
     log("success", name: "deleteAuth status");
+  }
+
+  static Future<void> saveScheduledNotification(ScheduledNotification notification) async {
+    final box = Hive.box('notification');
+
+    await box.put(notification.id, {
+      'id': notification.id,
+      'residentName': notification.residentName,
+      'recurrenceInterval': notification.recurrenceInterval.inMilliseconds,
+      'scheduledTime': notification.scheduledTime.toIso8601String(),
+    });
+  }
+
+  static Future<ScheduledNotification?> getScheduledNotification(int id) async {
+    final box = Hive.box('notification');
+    final data = box.get(id);
+
+    if (data == null) return null;
+
+    return ScheduledNotification(
+      id: data['id'],
+      residentName: data['residentName'],
+      recurrenceInterval: Duration(milliseconds: data['recurrenceInterval']),
+      scheduledTime: DateTime.parse(data['scheduledTime']),
+    );
+  }
+
+  static Future<void> updateScheduledNotification(int id, DateTime newTime) async {
+    final box = Hive.box('notification');
+    final existing = box.get(id);
+
+    if (existing == null) return;
+
+    final updated = Map<String, dynamic>.from(existing);
+    updated['scheduledTime'] = newTime.toIso8601String();
+
+    await box.put(id, updated);
+  }
+
+
+  static Future<List<ScheduledNotification>> getAllScheduledNotifications() async {
+    final box = Hive.box('notification');
+
+    final notifications = <ScheduledNotification>[];
+
+    for (var entry in box.values) {
+      try {
+        final data = Map<String, dynamic>.from(entry);
+        final notification = ScheduledNotification(
+          id: data['id'],
+          residentName: data['residentName'],
+          recurrenceInterval: Duration(milliseconds: data['recurrenceInterval']),
+          scheduledTime: DateTime.parse(data['scheduledTime']),
+        );
+        notifications.add(notification);
+      } catch (e, st) {
+        log(e.toString(), name: 'Data Error| LocalStorageService.dart');
+        log(st.toString());
+        continue;
+      }
+    }
+
+    return notifications;
   }
 }

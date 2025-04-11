@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/constants/asset_constant.dart';
@@ -68,15 +67,17 @@ class NavigationScreen extends StatelessWidget {
         ),
       ),
       body: Obx(
-            () => IndexedStack(
-          index: NavigationController.to.page.value,
-          children: [
-            DashboardScreen(),
-            DormListScreen(),
-            ResidentListScreen(),
-            ProfileScreen(),
-          ],
-        ),
+            () => SafeArea(
+              child: IndexedStack(
+                        index: NavigationController.to.page.value,
+                        children: [
+              DashboardScreen(),
+              DormListScreen(),
+              ResidentListScreen(),
+              ProfileScreen(),
+                        ],
+                      ),
+            ),
       ),
     );
   }

@@ -26,7 +26,7 @@ class DetailDormController extends GetxController {
   Future<void> _getRoom() async {
     try {
       room.value = await DetailDormRepository.getRoom(id);
-      room.refresh();
+      log(room.toString());
     } catch (e,st) {
       log(e.toString(), name: "Error");
       log(st.toString(), name: "Stacktrace");
@@ -66,11 +66,15 @@ class DetailDormController extends GetxController {
   }
 
   Future<void> deleteRoom(String roomId) async {
-    final result = await MainRepository.deleteRoom(dorm.value!.id!, roomId);
+    final result = await MainRepository.deleteRoom(roomId);
     log(result.toString(), name: "Result: ");
-    if(result.data['status'] == true) {
+    if(result) {
       refresh();
     }
+  }
+
+  Future<void> deleteResident(String residentId) async {
+    await MainRepository.deleteResident(residentId);
   }
 
   @override

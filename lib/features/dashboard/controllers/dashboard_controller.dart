@@ -33,13 +33,13 @@ class DashboardController extends GetxController {
     }
 
     _userSubscription = firestoreService
-        .streamCollection('users')
+        .collection('users')
         .doc(userId)
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists) {
         final user = FirestoreUser.fromMap(snapshot.id, snapshot.data() as Map<String, dynamic>);
-        displayName.value = user.name; // Automatically update name when Firestore changes
+        displayName.value = user.name;
       } else {
         log('User document not found');
       }
@@ -49,7 +49,7 @@ class DashboardController extends GetxController {
   }
 
   int get residentsTotal {
-    return dorms.fold(0, (prev, dorm) => prev + dorm.residentCount);
+    return GlobalService.residents.length;
   }
 
   Future<void> deleteDorm(String dormId) async {

@@ -5,21 +5,17 @@ class Room {
   final String? id;
   final String? dormId;
   final String roomName;
-  final double price;
+  final int price;
   final String notes;
   final DateTime? createdAt;
-  final List<Resident>? residents;
-  final bool occupied;
 
   Room({
     this.id,
     this.dormId,
-    required this.occupied,
     required this.roomName,
     required this.price,
     required this.notes,
     this.createdAt,
-    this.residents,
   });
 
   /// Factory method to create a `Room` object from a Firestore document
@@ -28,28 +24,24 @@ class Room {
       id: map['id'] as String?,
       dormId: map['dormId'] as String?,
       roomName: map['roomName'] as String,
-      price: double.parse(map['price'].toString()),
+      price: map['price'],
       notes: map['notes'] as String,
       createdAt: (map['createdAt'] is Timestamp)
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.tryParse(map['createdAt'] ?? ''),
-      residents: (map['residents'] as List<dynamic>?)
-          ?.map((e) => Resident.fromMap(e as Map<String, dynamic>))
-          .toList(),
-      occupied: map['occupied'] as bool,
+
     );
   }
 
   /// Converts a `Room` object to a Firestore-friendly map
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap({String? userId}) {
     return {
+      if(userId != null) 'userId': userId,
       'dormId': dormId,
       'roomName': roomName,
-      'price': price.toString(),
+      'price': price,
       'notes': notes,
       if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
-      if (residents != null)
-        'residents': residents!.map((resident) => resident.toMap()).toList(),
     };
   }
 
@@ -58,7 +50,7 @@ class Room {
     String? id,
     String? dormId,
     String? roomName,
-    double? price,
+    int? price,
     String? notes,
     int? capacity,
     DateTime? createdAt,
@@ -72,8 +64,29 @@ class Room {
       price: price ?? this.price,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
-      residents: residents ?? this.residents,
-      occupied: occupied ?? this.occupied,
     );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! Room) return false;
+
+    return other.id == id &&
+        other.dormId == dormId &&
+        other.roomName == roomName &&
+        other.price == price &&
+        other.notes == notes &&
+        other.createdAt == createdAt;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^
+    dormId.hashCode ^
+    roomName.hashCode ^
+    price.hashCode ^
+    notes.hashCode ^
+    createdAt.hashCode;
   }
 }

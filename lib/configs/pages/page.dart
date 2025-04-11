@@ -7,7 +7,6 @@ import 'package:kelola_kos/features/add_resident/bindings/add_resident_binding.d
 import 'package:kelola_kos/features/add_resident/views/ui/add_resident_screen.dart';
 import 'package:kelola_kos/features/add_room/bindings/add_room_binding.dart';
 import 'package:kelola_kos/features/dashboard/bindings/dashboard_binding.dart';
-import 'package:kelola_kos/features/dashboard/views/ui/dashboard_screen.dart';
 import 'package:kelola_kos/features/detail_dorm/bindings/detail_dorm_binding.dart';
 import 'package:kelola_kos/features/detail_dorm/views/ui/detail_dorm_screen.dart';
 import 'package:kelola_kos/features/dorm_list/bindings/dorm_list_binding.dart';
@@ -35,9 +34,6 @@ abstract class Pages {
         name: Routes.loginRoute,
         page: () => LoginScreen(),
         binding: LoginBinding(),
-        transition: Transition.upToDown,
-        transitionDuration: Duration(milliseconds: 400),
-        curve: Curves.easeInOut
     ),
     GetPage(
         name: Routes.registerRoute,

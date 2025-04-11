@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/shared/widgets/loading_bar.dart';
 import 'dart:developer';
@@ -27,6 +28,67 @@ class FirestoreService extends GetxService {
     }
   }
 
+  Future<void> _showConfirmationBottomSheet({
+    required String title,
+    required String message,
+    required VoidCallback onConfirm,
+  }) async {
+    Get.bottomSheet(
+      Container(
+        width: 1.sw,
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: Get.theme.colorScheme.errorContainer,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            20.verticalSpace,
+            Text(
+              title,
+              style: Get.textTheme.headlineSmall
+                  ?.copyWith(color: Get.theme.colorScheme.onErrorContainer),
+            ),
+            12.verticalSpace,
+            Text(
+              message,
+              style: Get.textTheme.bodyMedium
+                  ?.copyWith(color: Get.theme.colorScheme.onErrorContainer),
+            ),
+            20.verticalSpace,
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Get.back(),
+                    child: Text("Batal"),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Get.theme.colorScheme.onError,
+                      foregroundColor: Get.theme.colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () {
+                      Get.back();
+                      onConfirm();
+                    },
+                    child: Text("Hapus"),
+                  ),
+                ),
+              ],
+            ),
+            20.verticalSpace,
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showLoading() {
     Get.bottomSheet(
       const SizedBox(
@@ -38,7 +100,7 @@ class FirestoreService extends GetxService {
   }
 
   void _hideLoading() {
-    if (Get.isBottomSheetOpen == true) {
+    while (Get.isBottomSheetOpen == true) {
       Get.back();
     }
   }
@@ -50,7 +112,10 @@ class FirestoreService extends GetxService {
     try {
       _showLoading();
       await _firestore.collection(collectionPath).doc(docId).set(
-        data,
+        {
+          ...data,
+          'createdAt': FieldValue.serverTimestamp(),
+        },
         SetOptions(merge: merge),
       );
       _hideLoading();
@@ -72,23 +137,39 @@ class FirestoreService extends GetxService {
     } catch (e) {
       _hideLoading();
       _log('Failed to update document in $collectionPath/$docId', error: e);
+      rethrow;
     }
   }
 
   /// Deletes a document
   Future<void> deleteDocument(String collectionPath, String docId) async {
     try {
+      _showConfirmationBottomSheet(
+          title: 'Apakah kamu yakin?',
+          message: 'Tindakan ini akan menghapus item secara permanen.',
+          onConfirm: () async {
+            await _firestore.collection(collectionPath).doc(docId).delete();
+            _log('Document deleted in $collectionPath/$docId');
+          });
+    } catch (e) {
+      _log('Failed to delete document in $collectionPath/$docId', error: e);
+    }
+  }
+
+  Future<void> forceDeleteDocument(String collectionPath, String docId) async {
+    try {
       await _firestore.collection(collectionPath).doc(docId).delete();
-      _log('Document deleted in $collectionPath/$docId');
     } catch (e) {
       _log('Failed to delete document in $collectionPath/$docId', error: e);
     }
   }
 
   /// Fetches a single document by ID
-  Future<DocumentSnapshot?> getDocument(String collectionPath, String docId) async {
+  Future<DocumentSnapshot?> getDocument(
+      String collectionPath, String docId) async {
     try {
-      DocumentSnapshot doc = await _firestore.collection(collectionPath).doc(docId).get();
+      DocumentSnapshot doc =
+          await _firestore.collection(collectionPath).doc(docId).get();
       if (doc.exists) {
         _log('Fetched document from $collectionPath/$docId');
         return doc;
@@ -102,10 +183,11 @@ class FirestoreService extends GetxService {
     }
   }
 
-  /// Fetches all documents from a collection
-  Future<List<QueryDocumentSnapshot>> getCollection(String collectionPath) async {
+  Future<List<QueryDocumentSnapshot>> getCollection(
+      String collectionPath) async {
     try {
-      QuerySnapshot snapshot = await _firestore.collection(collectionPath).get();
+      QuerySnapshot snapshot =
+          await _firestore.collection(collectionPath).get();
       _log('Fetched collection from $collectionPath');
       return snapshot.docs;
     } catch (e) {
@@ -114,7 +196,21 @@ class FirestoreService extends GetxService {
     }
   }
 
-  CollectionReference<Map<String, dynamic>> streamCollection(String collectionPath) {
-    return _firestore.collection(collectionPath);
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
+    try {
+      return _firestore.collection(collectionPath);
+    } catch (e) {
+      _log("Failed to fetch collection from $collectionPath', error: e");
+      rethrow;
+    }
+  }
+
+  WriteBatch batch() {
+    try {
+      return _firestore.batch();
+    } catch (e) {
+      _log("Failed to fetch batch', error: e");
+      rethrow;
+    }
   }
 }

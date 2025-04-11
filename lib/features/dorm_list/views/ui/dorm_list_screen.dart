@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kelola_kos/configs/routes/route.dart';
 import 'package:kelola_kos/features/dorm_list/constants/dorm_list_assets_constant.dart';
 import 'package:kelola_kos/features/dorm_list/controllers/dorm_list_controller.dart';
 import 'package:kelola_kos/features/dorm_list/views/components/dorm_item.dart';
+import 'package:kelola_kos/utils/services/global_service.dart';
+import 'package:kelola_kos/utils/services/supabase_service.dart';
+import 'package:shimmer/shimmer.dart';
 
 class DormListScreen extends StatelessWidget {
   DormListScreen({super.key});
@@ -43,43 +45,79 @@ class DormListScreen extends StatelessWidget {
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     final dorm = DormListController.to.dorms[index];
-                    return DormItem(
-                      name: dorm.name,
-                      imageUrl: dorm.image,
-                      location: dorm.location,
-                      residentAmount: dorm.residentCount,
-                      residentMax: dorm.rooms.length,
-                      onTap: () {
-                        Get.toNamed(Routes.detailDormRoute, arguments: dorm.id);
-                      },
-                      trailing: PopupMenuButton<String>(
-                        onSelected: (String value) {
-                          switch (value) {
-                            case 'edit':
-                              Get.toNamed(Routes.addDormRoute, arguments: dorm);
-                              break;
-                            case 'delete':
-                              DormListController.to.deleteDorm(dorm.id!);
+                    return FutureBuilder<String>(
+                        future: SupabaseService.getImage(dorm.image ?? ''),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Shimmer.fromColors(
+                              baseColor: Get.theme.colorScheme.surfaceContainer,
+                              highlightColor: Get.theme.colorScheme.surfaceContainer.withOpacity(0.5),
+                              child: Container(
+                                height: 200,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Get.theme.colorScheme.surfaceContainer,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            );
                           }
-                        },
-                        itemBuilder: (BuildContext context) =>
-                            <PopupMenuEntry<String>>[
-                          const PopupMenuItem<String>(
-                            value: 'edit',
-                            child: Text('Edit'),
-                          ),
-                          PopupMenuItem<String>(
-                            value: 'delete',
-                            child: Text(
-                              'Delete',
-                              style:
-                                  TextStyle(color: Get.theme.colorScheme.error),
+
+                          if (snapshot.hasError) {
+                            return const SizedBox(
+                              height: 200,
+                              child: Center(child: Text('Gagal memuat gambar')),
+                            );
+                          }
+
+                          final imageUrl = snapshot.data ?? '';
+
+                          return DormItem(
+                            name: dorm.name,
+                            imageUrl: imageUrl,
+                            location: dorm.location,
+                            residentAmount: GlobalService.residents
+                                .where((resident) => resident.dormId == dorm.id)
+                                .length,
+                            residentMax: GlobalService.rooms
+                                .where((room) => room.dormId == dorm.id)
+                                .length,
+                            onTap: () {
+                              Get.toNamed(Routes.detailDormRoute,
+                                  arguments: dorm.id);
+                            },
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (String value) {
+                                switch (value) {
+                                  case 'edit':
+                                    Get.toNamed(Routes.addDormRoute,
+                                        arguments: dorm);
+                                    break;
+                                  case 'delete':
+                                    DormListController.to.deleteDorm(dorm.id!);
+                                }
+                              },
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                const PopupMenuItem<String>(
+                                  value: 'edit',
+                                  child: Text('Edit'),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'delete',
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                        color: Get.theme.colorScheme.error),
+                                  ),
+                                ),
+                              ],
+                              icon: const Icon(Icons.more_vert),
                             ),
-                          ),
-                        ],
-                        icon: Icon(Icons.more_vert), // Keep the three-dot icon
-                      ),
-                    );
+                          );
+                        },
+                      );
                   },
                   separatorBuilder: (context, index) => 12.verticalSpace,
                   itemCount: DormListController.to.dorms.length,
