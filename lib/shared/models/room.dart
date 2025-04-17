@@ -89,4 +89,8 @@ class Room {
     notes.hashCode ^
     createdAt.hashCode;
   }
+  @override
+  String toString() {
+    return 'Room{id: $id, dormId: $dormId, roomName: $roomName, price: $price, notes: $notes, createdAt: $createdAt}';
+  }
 }

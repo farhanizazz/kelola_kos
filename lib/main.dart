@@ -7,7 +7,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kelola_kos/configs/localizations/en/translations.dart';
 import 'package:kelola_kos/shared/bindings/global_binding.dart';
+import 'package:kelola_kos/utils/services/google_sign_in_service.dart';
 import 'package:kelola_kos/utils/services/notification_service.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:kelola_kos/configs/routes/route.dart';
@@ -120,6 +122,7 @@ class MyApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
+            translations: AppTranslations(),
             supportedLocales: const [
               Locale('en', 'US'),
               Locale('id', 'ID'),

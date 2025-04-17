@@ -78,7 +78,7 @@ class ProfileScreen extends StatelessWidget {
                   ProfileController.to.updateProfile();
                 },
                 child: const Text("Update Profile")),
-            48.verticalSpace,
+            // 48.verticalSpace,
             // Text(
             //   'Setting Akun',
             //   style: Get.textTheme.headlineMedium
@@ -101,15 +101,15 @@ class ProfileScreen extends StatelessWidget {
             //   ],
             // ),
             // 40.verticalSpace,
-            FilledButton(
-              style: FilledButton.styleFrom(
-                  backgroundColor: Get.theme.colorScheme.error),
-              onPressed: () {},
-              child: Text(
-                "Hapus Akun",
-                style: TextStyle(color: Get.theme.colorScheme.onError),
-              ),
-            ),
+            // FilledButton(
+            //   style: FilledButton.styleFrom(
+            //       backgroundColor: Get.theme.colorScheme.error),
+            //   onPressed: () {},
+            //   child: Text(
+            //     "Hapus Akun",
+            //     style: TextStyle(color: Get.theme.colorScheme.onError),
+            //   ),
+            // ),
             12.verticalSpace,
             TonalButton(
               onPressed: () {

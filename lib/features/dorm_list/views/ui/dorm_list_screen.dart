@@ -19,7 +19,7 @@ class DormListScreen extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         icon: Icon(Icons.add),
-        label: Text("Tambah Kos"),
+        label: Text('Tambah Kos'.tr),
         onPressed: () {
           Get.toNamed(Routes.addDormRoute);
         },
@@ -34,7 +34,7 @@ class DormListScreen extends StatelessWidget {
               SizedBox(
                 width: 250,
                 child: Text(
-                  'Semua Kos Anda',
+                  'Semua Kos Anda'.tr,
                   style: Get.textTheme.headlineLarge,
                 ),
               ),
@@ -73,47 +73,49 @@ class DormListScreen extends StatelessWidget {
 
                           final imageUrl = snapshot.data ?? '';
 
-                          return DormItem(
-                            name: dorm.name,
-                            imageUrl: imageUrl,
-                            location: dorm.location,
-                            residentAmount: GlobalService.residents
-                                .where((resident) => resident.dormId == dorm.id)
-                                .length,
-                            residentMax: GlobalService.rooms
-                                .where((room) => room.dormId == dorm.id)
-                                .length,
-                            onTap: () {
-                              Get.toNamed(Routes.detailDormRoute,
-                                  arguments: dorm.id);
-                            },
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (String value) {
-                                switch (value) {
-                                  case 'edit':
-                                    Get.toNamed(Routes.addDormRoute,
-                                        arguments: dorm);
-                                    break;
-                                  case 'delete':
-                                    DormListController.to.deleteDorm(dorm.id!);
-                                }
+                          return Obx(
+                            () => DormItem(
+                              name: dorm.name,
+                              imageUrl: imageUrl,
+                              location: dorm.location,
+                              residentAmount: GlobalService.residents
+                                  .where((resident) => resident.dormId == dorm.id)
+                                  .length,
+                              residentMax: GlobalService.rooms
+                                  .where((room) => room.dormId == dorm.id)
+                                  .length,
+                              onTap: () {
+                                Get.toNamed(Routes.detailDormRoute,
+                                    arguments: dorm.id);
                               },
-                              itemBuilder: (BuildContext context) =>
-                                  <PopupMenuEntry<String>>[
-                                const PopupMenuItem<String>(
-                                  value: 'edit',
-                                  child: Text('Edit'),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'delete',
-                                  child: Text(
-                                    'Delete',
-                                    style: TextStyle(
-                                        color: Get.theme.colorScheme.error),
+                              trailing: PopupMenuButton<String>(
+                                onSelected: (String value) {
+                                  switch (value) {
+                                    case 'edit':
+                                      Get.toNamed(Routes.addDormRoute,
+                                          arguments: dorm);
+                                      break;
+                                    case 'delete':
+                                      DormListController.to.deleteDorm(dorm.id!);
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) =>
+                                    <PopupMenuEntry<String>>[
+                                  const PopupMenuItem<String>(
+                                    value: 'edit',
+                                    child: Text('Edit'),
                                   ),
-                                ),
-                              ],
-                              icon: const Icon(Icons.more_vert),
+                                  PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Text(
+                                      'Delete',
+                                      style: TextStyle(
+                                          color: Get.theme.colorScheme.error),
+                                    ),
+                                  ),
+                                ],
+                                icon: const Icon(Icons.more_vert),
+                              ),
                             ),
                           );
                         },

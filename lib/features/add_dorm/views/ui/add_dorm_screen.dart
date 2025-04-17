@@ -1,4 +1,5 @@
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -84,7 +85,7 @@ class AddDormScreen extends StatelessWidget {
                   if (image != null) {
                     child = Image.file(image, fit: BoxFit.cover);
                   } else if (imageUrl.isNotEmpty) {
-                    child = Image.network(imageUrl, fit: BoxFit.cover);
+                    child = CachedNetworkImage(imageUrl: imageUrl, fit: BoxFit.cover);
                   } else {
                     child = Column(
                       mainAxisAlignment: MainAxisAlignment.center,

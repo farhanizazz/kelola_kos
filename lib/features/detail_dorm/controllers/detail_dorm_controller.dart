@@ -8,6 +8,7 @@ import 'package:kelola_kos/features/detail_dorm/repositories/detail_dorm_reposit
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
 import 'package:kelola_kos/shared/repositories/main_repository.dart';
+import 'package:kelola_kos/utils/services/global_service.dart';
 
 class DetailDormController extends GetxController {
   final Rxn<Dorm> dorm = Rxn<Dorm>();
@@ -19,25 +20,28 @@ class DetailDormController extends GetxController {
     log(id, name: "Detail dorm argument");
     // TODO: implement onInit
     _getDorm();
-    _getRoom();
+    _bindRoomStream();
     super.onInit();
   }
 
-  Future<void> _getRoom() async {
-    try {
-      room.value = await DetailDormRepository.getRoom(id);
-      log(room.toString());
-    } catch (e,st) {
-      log(e.toString(), name: "Error");
-      log(st.toString(), name: "Stacktrace");
-    }
+  void _bindRoomStream() {
+    room.bindStream(GlobalService.rooms.stream.map(
+      (rooms) {
+        log(rooms.toString(), name: "Room in detail dorm controller stream ");
+        return rooms.where((r) => r.dormId == id).toList();
+      },
+    ));
+    final latestRooms = GlobalService.rooms;
+    room.value = latestRooms.where((r) => r.dormId == id).toList();
+    log(GlobalService.rooms.toString(), name: "Room in detail dorm controller");
+    log(id, name: "Dorm id in detail dorm controller");
   }
 
   Future<void> _getDorm() async {
     try {
       dorm.value = await DetailDormRepository.getDorm(id);
       dorm.refresh();
-    } catch (e,st) {
+    } catch (e, st) {
       log(e.toString(), name: "Error");
       log(st.toString(), name: "Stacktrace");
     }
@@ -51,8 +55,7 @@ class DetailDormController extends GetxController {
         height: Get.height * 0.8,
         decoration: BoxDecoration(
           color: Get.theme.colorScheme.surface,
-          borderRadius:
-          BorderRadius.vertical(top: Radius.circular(16)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
         child: AddRoomScreen(),
       ),
@@ -60,7 +63,7 @@ class DetailDormController extends GetxController {
     );
     Get.delete<AddRoomController>();
     log(result.toString(), name: "Result: ");
-    if(result == true) {
+    if (result == true) {
       refresh();
     }
   }
@@ -68,9 +71,6 @@ class DetailDormController extends GetxController {
   Future<void> deleteRoom(String roomId) async {
     final result = await MainRepository.deleteRoom(roomId);
     log(result.toString(), name: "Result: ");
-    if(result) {
-      refresh();
-    }
   }
 
   Future<void> deleteResident(String residentId) async {
@@ -79,8 +79,8 @@ class DetailDormController extends GetxController {
 
   @override
   void refresh() {
-    _getRoom();
     super.refresh();
   }
+
   static DetailDormController get to => Get.find();
 }

@@ -54,7 +54,7 @@ class LanguageChoiceChip extends StatelessWidget {
           curve: Curves.easeInOut,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected ? Get.theme.primaryColor : Colors.white,
+            color: isSelected ? Get.theme.colorScheme.surface : Get.theme.colorScheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -71,7 +71,7 @@ class LanguageChoiceChip extends StatelessWidget {
               Text(
                 name,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: Get.theme.colorScheme.onSurface,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -83,7 +83,7 @@ class LanguageChoiceChip extends StatelessWidget {
                   child: Icon(
                     Icons.check,
                     size: 20,
-                    color: Colors.white,
+                    color: Get.theme.colorScheme.onSurface,
                   ).animate().fade(duration: 200.ms).scale(
                     begin: const Offset(0.5, 0.5),
                     end: const Offset(1, 1),

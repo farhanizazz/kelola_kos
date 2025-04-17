@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
 import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
@@ -27,14 +26,15 @@ class MainRepository {
       //     .where("dormId", isEqualTo: dormId)
       //     .get();
 
-      for (var doc in roomsSnapshot.docs) {
-        await firestore.forceDeleteDocument("Rooms", doc.id);
+      final dormDeleted = await firestore.deleteDocument("Dorms", dormId);
+
+      if (dormDeleted) {
+        for (var doc in roomsSnapshot.docs) {
+          await firestore.forceDeleteDocument("Rooms", doc.id);
+        }
+        log("Dorm $dormId and associated rooms deleted successfully");
       }
 
-      // Delete the dorm itself
-      await firestore.deleteDocument("Dorms", dormId);
-      Get.back();
-      log("Dorm $dormId and associated rooms deleted successfully");
       return true;
     } catch (e) {
       log("Error deleting dorm: $e");

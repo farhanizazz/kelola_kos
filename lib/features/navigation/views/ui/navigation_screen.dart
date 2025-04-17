@@ -43,7 +43,7 @@ class NavigationScreen extends StatelessWidget {
                 colorFilter: ColorFilter.mode(
                     Get.theme.colorScheme.onSurface, BlendMode.srcIn),
               ),
-              label: 'Kos Anda',
+              label: 'Kos Anda'.tr,
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(AssetConstant.icResident),
@@ -52,7 +52,7 @@ class NavigationScreen extends StatelessWidget {
                 colorFilter: ColorFilter.mode(
                     Get.theme.colorScheme.onSurface, BlendMode.srcIn),
               ),
-              label: 'Penghuni',
+              label: 'Penghuni'.tr,
             ),
             BottomNavigationBarItem(
               icon: SvgPicture.asset(AssetConstant.icPerson),

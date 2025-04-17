@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -26,8 +27,8 @@ class CustomListItem extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              image ?? 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg',
+            child: CachedNetworkImage(
+              imageUrl: image ?? 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg',
               width: 80,
               height: 64,
               fit: BoxFit.cover,
@@ -43,7 +44,7 @@ class CustomListItem extends StatelessWidget {
                     ?.copyWith(fontWeight: FontWeight.w600),
               ),
               Text(
-                "Residents: ${residentCount.toString()}/${maxResident.toString()}",
+                "${"Penghuni".tr}: ${residentCount.toString()}/${maxResident.toString()}",
                 style: Get.textTheme.bodySmall
                     ?.copyWith(color: Get.theme.disabledColor),
               )

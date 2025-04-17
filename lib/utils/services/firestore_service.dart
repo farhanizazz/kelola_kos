@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -142,19 +144,32 @@ class FirestoreService extends GetxService {
   }
 
   /// Deletes a document
-  Future<void> deleteDocument(String collectionPath, String docId) async {
+  Future<bool> deleteDocument(String collectionPath, String docId) async {
+    final completer = Completer<bool>();
+
     try {
       _showConfirmationBottomSheet(
-          title: 'Apakah kamu yakin?',
-          message: 'Tindakan ini akan menghapus item secara permanen.',
-          onConfirm: () async {
+        title: 'Apakah kamu yakin?',
+        message: 'Tindakan ini akan menghapus item secara permanen.',
+        onConfirm: () async {
+          try {
             await _firestore.collection(collectionPath).doc(docId).delete();
             _log('Document deleted in $collectionPath/$docId');
-          });
+            completer.complete(true);
+          } catch (e) {
+            _log('Failed to delete document in $collectionPath/$docId', error: e);
+            completer.complete(false);
+          }
+        },
+      );
     } catch (e) {
-      _log('Failed to delete document in $collectionPath/$docId', error: e);
+      _log('Failed to show confirmation for deleting $collectionPath/$docId', error: e);
+      completer.complete(false);
     }
+
+    return completer.future;
   }
+
 
   Future<void> forceDeleteDocument(String collectionPath, String docId) async {
     try {

@@ -5,6 +5,7 @@ import 'package:kelola_kos/configs/routes/route.dart';
 import 'package:kelola_kos/features/resident_list/constants/resident_list_assets_constant.dart';
 import 'package:kelola_kos/features/resident_list/controllers/resident_list_controller.dart';
 import 'package:kelola_kos/features/resident_list/models/resident.dart';
+import 'package:kelola_kos/utils/functions/price_format.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 
 class ResidentListScreen extends StatelessWidget {
@@ -17,7 +18,7 @@ class ResidentListScreen extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         icon: Icon(Icons.add),
-        label: Text("Tambah Penghuni"),
+        label: Text("Tambah Penghuni".tr),
         onPressed: () {
           Get.toNamed(Routes.addResidentRoute);
         },
@@ -32,7 +33,7 @@ class ResidentListScreen extends StatelessWidget {
               SizedBox(
                 width: 250,
                 child: Text(
-                  'Penghuni',
+                  'Penghuni'.tr,
                   style: Get.textTheme.headlineLarge,
                 ),
               ),
@@ -62,7 +63,7 @@ class ResidentListScreen extends StatelessWidget {
                             PopupMenuItem(
                               value: 'delete',
                               child: Text(
-                                'Hapus Kamar',
+                                'Hapus Kamar'.tr,
                                 style:
                                     TextStyle(color: Get.theme.colorScheme.error),
                               ),
@@ -94,11 +95,11 @@ class ResidentListScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              "Rp.1.200.000",
+                              GlobalService.rooms.firstWhere((room) => room.id == resident.roomId).price.formatPrice(),
                               style: Get.textTheme.bodyLarge,
                             ),
                             Text(
-                              resident.paymentStatus ? 'Lunas' : 'Belum dibayar',
+                              resident.paymentStatus ? 'Lunas'.tr : 'Belum dibayar'.tr,
                               style: Get.textTheme.bodySmall?.copyWith(
                                   color: resident.paymentStatus
                                       ? Get.theme.colorScheme.tertiary

@@ -13,6 +13,8 @@ import 'package:kelola_kos/features/splash/view/components/custom_card.dart';
 import 'package:kelola_kos/features/dashboard/views/components/custom_list_item.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
+import 'package:kelola_kos/utils/services/supabase_service.dart';
+import 'package:shimmer/shimmer.dart';
 
 class DashboardScreen extends StatelessWidget {
   DashboardScreen({Key? key}) : super(key: key);
@@ -32,7 +34,7 @@ class DashboardScreen extends StatelessWidget {
                 width: 250,
                 child: Obx(
                   () => Text(
-                    'Halo ${DashboardController.to.displayName}!',
+                    '${'Halo'.tr} ${DashboardController.to.displayName}!',
                     style: Get.textTheme.headlineLarge,
                   ),
                 )),
@@ -41,7 +43,7 @@ class DashboardScreen extends StatelessWidget {
               onTapOutside: (event) =>
                   FocusManager.instance.primaryFocus?.unfocus(),
               onTap: () {},
-              hintText: "Cari kos",
+              hintText: "Cari kos".tr,
               leading: Icon(
                 Icons.search,
                 color: Get.theme.disabledColor,
@@ -54,7 +56,7 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 CustomCard(
                   icon: Icon(Icons.visibility_outlined),
-                  title: "Lihat Kos",
+                  title: "Lihat Kos".tr,
                   onTap: () {
                     NavigationController.to.page.value = 1;
                   },
@@ -65,7 +67,7 @@ class DashboardScreen extends StatelessWidget {
                     colorFilter: ColorFilter.mode(
                         Get.theme.colorScheme.onSurface, BlendMode.srcIn),
                   ),
-                  title: "Kelola Penghuni",
+                  title: "Kelola Penghuni".tr,
                   onTap: () {
                     NavigationController.to.page.value = 2;
                   },
@@ -78,14 +80,14 @@ class DashboardScreen extends StatelessWidget {
                             Get.theme.colorScheme.onSurface, BlendMode.srcIn),
                       ),
                       title:
-                          "${DashboardController.to.residentsTotal} Penghuni"),
+                          "${DashboardController.to.residentsTotal} ${'Penghuni'.tr}"),
                 ),
                 CustomCard(icon: Icon(Icons.star_outline), title: "Favorite"),
               ],
             ),
             32.verticalSpace,
             Text(
-              'Kos Anda ${kDebugMode ? LocalStorageService.box.get(LocalStorageConstant.USER_ID) : ''}',
+              '${"Kos Anda".tr} ${kDebugMode ? LocalStorageService.box.get(LocalStorageConstant.USER_ID) : ''}',
               style: Get.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Get.theme.colorScheme.onSurface,
@@ -134,13 +136,44 @@ class DashboardScreen extends StatelessWidget {
                         Get.toNamed(Routes.addDormRoute, arguments: dorm);
                       }
                     },
-                    child: CustomListItem(
-                      onTap: () => Get.toNamed(Routes.detailDormRoute,
-                          arguments: dorm.id),
-                      image: dorm.image!,
-                      dormName: dorm.name,
-                      maxResident: GlobalService.rooms.where((room) => room.dormId == dorm.id).length,
-                      residentCount: GlobalService.residents.where((resident) => resident.dormId == dorm.id).length,
+                    child: FutureBuilder<String>(
+                      future: SupabaseService.getImage(dorm.image ?? ''),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Shimmer.fromColors(
+                            baseColor: Get.theme.colorScheme.surfaceContainer,
+                            highlightColor: Get.theme.colorScheme.surfaceContainer.withOpacity(0.5),
+                            child: Container(
+                              height: 64,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Get.theme.colorScheme.surfaceContainer,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return const SizedBox(
+                            height: 200,
+                            child: Center(child: Text('Gagal memuat gambar')),
+                          );
+                        }
+
+                        final imageUrl = snapshot.data ?? '';
+                        return Obx(
+                            () => CustomListItem(
+                            onTap: () => Get.toNamed(Routes.detailDormRoute,
+                                arguments: dorm.id),
+                            image: imageUrl,
+                            dormName: dorm.name,
+                            maxResident: GlobalService.rooms.where((room) => room.dormId == dorm.id).length,
+                            residentCount: GlobalService.residents.where((resident) => resident.dormId == dorm.id).length,
+                          ),
+                        );
+                      },
                     ),
                   );
                 },

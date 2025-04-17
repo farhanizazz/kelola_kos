@@ -54,7 +54,7 @@ class ProfileController extends GetxController {
       Container(
         padding: EdgeInsets.all(17),
         decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(30)),
+            color: Get.theme.colorScheme.surfaceContainer, borderRadius: BorderRadius.circular(30)),
         height: 210,
         width: 1.sw,
         child: Column(
