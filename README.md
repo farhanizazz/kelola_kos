@@ -6,30 +6,13 @@ Venturo Core adalah Sebuah Sekeleton yang dibuat menggunakan State Management Ge
 
 ## Installation
 
-Install dengan cara seperti berikut :
+Install by following these steps:
 
-- Clone git project
-- Ubah nama folder sesuai dengan nama package name
-- Ubah package name mengunakan plugin [change_app_package_name](https://pub.dev/packages/change_app_package_name).
+- Clone the Git project.
+- Rename the folder according to the desired package name.
+- Change the package name using the change_app_package_name plugin.
 
-## Change Color
+## APK Installation
+Download APK From Releases or from this link
 
-Untuk mengubah color settingan color berada di folder lib/shared/style/color_style.dart sesuai dengan SOP Flutter Basic
-
-## Change Text Style
-
-Untuk mengubah color settingan color berada di folder lib/shared/style/google_text_style.dart sesuai dengan SOP Flutter Basic
-
-## Generator
-
-Generator dibuat untuk memudahkan programmer dalam membuat sebuah fitur maupun sub fitur dan cara pengunaan seperti berikut : 
-
-Jalankan kode berikut untuk memulai proses generator :
-
-```bash
-dart generator.dart
-```
-
-Pilihlah fitur atau sub fitur yang akan di buat.
-
-Jika Masih bingung bisa menghubungsi mentor kamu melalui discord / Wa ke mentor kamu.
+https://drive.google.com/file/d/1p_OSgBqYH40mwsWcglmbQcoy6oEDGoKf/view?usp=drive_link
