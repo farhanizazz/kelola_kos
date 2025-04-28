@@ -1,6 +1,6 @@
-# Venturo Core
+# KelolaKos
 
-Venturo Core adalah Sebuah Sekeleton yang dibuat menggunakan State Management Get X yang dipadukan dengan Flutter Util Screen, untuk memudahkan programmer dalam memulai sebuah Project di [Venturo Pro Indonesia](https://venturo.id/).
+KelolaKos is a mobile application designed to help property owners manage dormitories by automating room tracking and rent payment processes. The app streamlines tenant management, payment scheduling, and room organization through a simple and intuitive interface.
 
 **Versi Flutter : 3.19.0**
 
