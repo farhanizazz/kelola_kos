@@ -164,14 +164,14 @@ class AddResidentController extends GetxController {
             try {
               await AddResidentRepository.addResident(
                   selectedDorm.value, selectedRoom.value, resident);
+              log('Sukses');
+              Future.delayed(Duration(milliseconds: 300), () {
+                Get.back();
+              });
             } catch (e, st) {
               log(e.toString(), name: 'Add Resident Error');
               log(st.toString(), name: 'Stacktrace');
             }
-            log('Sukses');
-            Future.delayed(Duration(milliseconds: 300), () {
-              Get.back();
-            });
           }
         } else {
           await AddResidentRepository.addResident(

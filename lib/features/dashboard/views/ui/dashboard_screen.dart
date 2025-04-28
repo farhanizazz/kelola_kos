@@ -39,14 +39,23 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 )),
             20.verticalSpace,
-            SearchBar(
-              onTapOutside: (event) =>
-                  FocusManager.instance.primaryFocus?.unfocus(),
-              onTap: () {},
-              hintText: "Cari kos".tr,
-              leading: Icon(
-                Icons.search,
-                color: Get.theme.disabledColor,
+            Hero(
+              tag: 'search',
+              child: GestureDetector(
+                onTap: () {
+                  Get.toNamed(Routes.searchRoute);
+                },
+                child: AbsorbPointer(
+                  child: SearchBar(
+                    onTapOutside: (event) =>
+                        FocusManager.instance.primaryFocus?.unfocus(),
+                    hintText: "Cari kos".tr,
+                    leading: Icon(
+                      Icons.search,
+                      color: Get.theme.disabledColor,
+                    ),
+                  ),
+                ),
               ),
             ),
             36.verticalSpace,

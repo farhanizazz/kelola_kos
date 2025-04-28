@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:kelola_kos/shared/widgets/loading_bar.dart';
 import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
 
@@ -13,8 +12,6 @@ class FirebaseService {
   factory FirebaseService() => _instance;
 
   FirebaseService._internal();
-
-  static final FirebaseAuth _auth = FirebaseAuth.instance;
 
   /// Executes a Firebase action with automatic error handling
   Future<T?> execute<T>(Future<T> Function() action) async {

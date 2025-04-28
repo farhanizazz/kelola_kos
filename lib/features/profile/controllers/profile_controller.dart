@@ -20,6 +20,7 @@ class ProfileController extends GetxController {
   final TextEditingController fullNameCtrl = TextEditingController();
   final FirestoreService firestoreService = FirestoreService();
   var currentLocale = Rx<Locale>(Get.locale ?? Locale('id', 'ID'));
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
 
   @override
@@ -34,7 +35,39 @@ class ProfileController extends GetxController {
         LocalStorageService.box.get(LocalStorageConstant.FULLNAME);
   }
 
+  String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Name cannot be empty';
+    }
+    return null;
+  }
+
+  String? validateEmail(String? value) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (value == null || !emailRegex.hasMatch(value)) {
+      return 'Invalid email format';
+    }
+    return null;
+  }
+
+  String? validatePhone(String? value) {
+    if (value == null || value.trim().length < 8) {
+      return 'Invalid phone number';
+    }
+    return null;
+  }
+
+  String? validateFullName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Full name cannot be empty';
+    }
+    return null;
+  }
+
   Future<void> updateProfile() async {
+    final form = formKey.currentState;
+    if (form == null || !form.validate()) return;
+
     final newUserData = FirestoreUser(
       uid: LocalStorageService.box.get(LocalStorageConstant.USER_ID),
       email: emailCtrl.text,

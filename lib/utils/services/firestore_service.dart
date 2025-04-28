@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/shared/widgets/loading_bar.dart';
+import 'package:kelola_kos/utils/functions/show_confirmation_bottom_sheet.dart';
 import 'dart:developer';
 import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
 
@@ -28,67 +28,6 @@ class FirestoreService extends GetxService {
     } else {
       log('[Firestore SUCCESS] $message');
     }
-  }
-
-  Future<void> _showConfirmationBottomSheet({
-    required String title,
-    required String message,
-    required VoidCallback onConfirm,
-  }) async {
-    Get.bottomSheet(
-      Container(
-        width: 1.sw,
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: Get.theme.colorScheme.errorContainer,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            20.verticalSpace,
-            Text(
-              title,
-              style: Get.textTheme.headlineSmall
-                  ?.copyWith(color: Get.theme.colorScheme.onErrorContainer),
-            ),
-            12.verticalSpace,
-            Text(
-              message,
-              style: Get.textTheme.bodyMedium
-                  ?.copyWith(color: Get.theme.colorScheme.onErrorContainer),
-            ),
-            20.verticalSpace,
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => Get.back(),
-                    child: Text("Batal"),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Get.theme.colorScheme.onError,
-                      foregroundColor: Get.theme.colorScheme.onErrorContainer,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () {
-                      Get.back();
-                      onConfirm();
-                    },
-                    child: Text("Hapus"),
-                  ),
-                ),
-              ],
-            ),
-            20.verticalSpace,
-          ],
-        ),
-      ),
-    );
   }
 
   void _showLoading() {
@@ -128,6 +67,34 @@ class FirestoreService extends GetxService {
     }
   }
 
+  Future<void> setDocumentIfNotExists(
+      String collectionPath,
+      String? docId,
+      Map<String, dynamic> data,
+      ) async {
+    try {
+      _showLoading();
+      final docRef = _firestore.collection(collectionPath).doc(docId);
+      final docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        await docRef.set({
+          ...data,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        _log('Document created at $collectionPath/$docId');
+        _hideLoading();
+      } else {
+        _log('Document at $collectionPath/$docId already exists. Skipped write.');
+        _hideLoading();
+        showErrorBottomSheet('Error', 'Penghuni sudah ada, silahkan buat penghuni baru dengan nomor telepon yang berbeda');
+      }
+    } catch (e) {
+      _log('Failed to set document at $collectionPath/$docId', error: e);
+    }
+  }
+
+
   /// Updates specific fields in a document
   Future<void> updateDocument(
       String collectionPath, String docId, Map<String, dynamic> data) async {
@@ -148,13 +115,15 @@ class FirestoreService extends GetxService {
     final completer = Completer<bool>();
 
     try {
-      _showConfirmationBottomSheet(
+      showConfirmationBottomSheet(
         title: 'Apakah kamu yakin?',
         message: 'Tindakan ini akan menghapus item secara permanen.',
         onConfirm: () async {
           try {
+            _showLoading();
             await _firestore.collection(collectionPath).doc(docId).delete();
             _log('Document deleted in $collectionPath/$docId');
+            _hideLoading();
             completer.complete(true);
           } catch (e) {
             _log('Failed to delete document in $collectionPath/$docId', error: e);
@@ -210,6 +179,33 @@ class FirestoreService extends GetxService {
       return [];
     }
   }
+
+  Future<List<QueryDocumentSnapshot>> searchCollection({
+    required String collectionPath,
+    required String searchText,
+    int limit = 10,
+  }) async {
+    try {
+      final token = searchText.trim().toLowerCase();
+
+      if (token.isEmpty) return [];
+
+      QuerySnapshot snapshot = await _firestore
+          .collection(collectionPath)
+          .where('search_token', arrayContains: token)
+          .limit(limit)
+          .get();
+
+      _log('Searched token "$token" in $collectionPath');
+      _log('Found ${snapshot.docs.length} documents');
+
+      return snapshot.docs;
+    } catch (e) {
+      _log('Failed to search token "$searchText" in $collectionPath', error: e);
+      return [];
+    }
+  }
+
 
   CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
     try {

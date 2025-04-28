@@ -155,6 +155,12 @@ class AddDormController extends GetxController {
       try {
         FirestoreService firestore = FirestoreService.to;
         WriteBatch batch = FirebaseFirestore.instance.batch();
+        String clean(String text) => text.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '');
+        final tokens = {
+          ...clean(dormNameController.text).split(' '),
+          ...clean(locationController.text).split(' '),
+          ...clean(noteController.text).split(' '),
+        }.where((token) => token.isNotEmpty).toList();
         if (Get.arguments != null) {
           final dormData = {
             'userId': LocalStorageService.box.get(LocalStorageConstant.USER_ID),
@@ -162,6 +168,7 @@ class AddDormController extends GetxController {
             'location': locationController.text,
             'note': noteController.text,
             'image': arguments.image,
+            'search_token': tokens
           };
           log("Update", name: "Add Dorm Status");
           final dormId = arguments.id!;
@@ -174,6 +181,7 @@ class AddDormController extends GetxController {
             'location': locationController.text,
             'note': noteController.text,
             'image': imagePath,
+            'search_token': tokens,
           };
           final newDocRef =
               FirebaseFirestore.instance.collection("Dorms").doc();

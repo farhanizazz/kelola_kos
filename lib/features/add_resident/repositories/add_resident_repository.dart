@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/features/add_resident/constants/add_resident_api_constant.dart';
 import 'package:kelola_kos/features/resident_list/models/resident.dart';
+import 'package:kelola_kos/utils/functions/normalize_phone_number.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
@@ -22,7 +23,7 @@ class AddResidentRepository {
     try {
       final newDocRef = FirebaseFirestore.instance.collection("Residents").doc();
       log(newDocRef.path);
-      firestoreClient.setDocument('Residents', newDocRef.id, resident.toMap(userId: userId));
+      await firestoreClient.setDocumentIfNotExists('Residents', normalizePhoneNumber(resident.phone), resident.toMap(userId: userId));
     } catch (e, st) {
       log(e.toString());
       log(st.toString());

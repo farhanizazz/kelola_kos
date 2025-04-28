@@ -18,109 +18,116 @@ class ProfileScreen extends StatelessWidget {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            25.verticalSpace,
-            Text(
-              'Profile',
-              style: Get.textTheme.headlineLarge,
-            ),
-            14.verticalSpace,
-            TextField(
-              decoration: const InputDecoration(hintText: "Nama"),
-              controller: ProfileController.to.nameCtrl,
-            ),
-            16.verticalSpace,
-            TextField(
-              decoration: const InputDecoration(hintText: "Nama lengkap"),
-              controller: ProfileController.to.fullNameCtrl,
-            ),
-            16.verticalSpace,
-            TextField(
-              decoration: const InputDecoration(hintText: "Email"),
-              controller: ProfileController.to.emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            12.verticalSpace,
-            TextField(
-              decoration: const InputDecoration(
-                hintText: "Nomor Telepon",
+        child: Form(
+          key: ProfileController.to.formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              25.verticalSpace,
+              Text(
+                'Profile',
+                style: Get.textTheme.headlineLarge,
               ),
-              controller: ProfileController.to.phoneCtrl,
-              keyboardType: TextInputType.phone,
-            ),
-            12.verticalSpace,
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Bahasa",
-                prefixIcon: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: SvgPicture.asset(
-                      height: 30,
-                      Get.locale == Locale('id', 'ID') ? AssetConstant.icIndoFlag : AssetConstant.icEngFlag,
-                      fit: BoxFit.cover,
+              14.verticalSpace,
+              TextFormField(
+                validator: ProfileController.to.validateName,
+                decoration: const InputDecoration(hintText: "Nama"),
+                controller: ProfileController.to.nameCtrl,
+              ),
+              16.verticalSpace,
+              TextFormField(
+                validator: ProfileController.to.validateFullName,
+                decoration: const InputDecoration(hintText: "Nama lengkap"),
+                controller: ProfileController.to.fullNameCtrl,
+              ),
+              16.verticalSpace,
+              TextFormField(
+                validator: ProfileController.to.validateEmail,
+                decoration: const InputDecoration(hintText: "Email"),
+                controller: ProfileController.to.emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              12.verticalSpace,
+              TextFormField(
+                validator: ProfileController.to.validatePhone,
+                decoration: const InputDecoration(
+                  hintText: "Nomor Telepon",
+                ),
+                controller: ProfileController.to.phoneCtrl,
+                keyboardType: TextInputType.phone,
+              ),
+              12.verticalSpace,
+              TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Bahasa",
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: SvgPicture.asset(
+                        height: 30,
+                        Get.locale == Locale('id', 'ID') ? AssetConstant.icIndoFlag : AssetConstant.icEngFlag,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              controller: ProfileController.to.languageCtrl,
-              onTap: () {
-                ProfileController.to.changeLanguage(context);
-              },
-              readOnly: true,
-            ),
-            12.verticalSpace,
-            FilledButton(
-                onPressed: () {
-                  ProfileController.to.updateProfile();
+                controller: ProfileController.to.languageCtrl,
+                onTap: () {
+                  ProfileController.to.changeLanguage(context);
                 },
-                child: const Text("Update Profile")),
-            // 48.verticalSpace,
-            // Text(
-            //   'Setting Akun',
-            //   style: Get.textTheme.headlineMedium
-            //       ?.copyWith(fontWeight: FontWeight.w600),
-            // ),
-            // 16.verticalSpace,
-            // Row(
-            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //   children: [
-            //     Text(
-            //       'Terima Notifikasi',
-            //       style: Get.textTheme.headlineSmall
-            //           ?.copyWith(fontWeight: FontWeight.w600),
-            //     ),
-            //     Obx(
-            //         () => Switch(value: ProfileController.to.notificationStatus.value, onChanged: (value) {
-            //         ProfileController.to.notificationStatus.value = !ProfileController.to.notificationStatus.value;
-            //       }),
-            //     )
-            //   ],
-            // ),
-            // 40.verticalSpace,
-            // FilledButton(
-            //   style: FilledButton.styleFrom(
-            //       backgroundColor: Get.theme.colorScheme.error),
-            //   onPressed: () {},
-            //   child: Text(
-            //     "Hapus Akun",
-            //     style: TextStyle(color: Get.theme.colorScheme.onError),
-            //   ),
-            // ),
-            12.verticalSpace,
-            TonalButton(
-              onPressed: () {
-                AuthService.to.signOut();
-              },
-              child: Text(
-                "Logout",
-                style: TextStyle(color: Get.theme.colorScheme.onSurface),
+                readOnly: true,
               ),
-            ),
-          ],
+              12.verticalSpace,
+              FilledButton(
+                  onPressed: () {
+                    ProfileController.to.updateProfile();
+                  },
+                  child: const Text("Update Profile")),
+              // 48.verticalSpace,
+              // Text(
+              //   'Setting Akun',
+              //   style: Get.textTheme.headlineMedium
+              //       ?.copyWith(fontWeight: FontWeight.w600),
+              // ),
+              // 16.verticalSpace,
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text(
+              //       'Terima Notifikasi',
+              //       style: Get.textTheme.headlineSmall
+              //           ?.copyWith(fontWeight: FontWeight.w600),
+              //     ),
+              //     Obx(
+              //         () => Switch(value: ProfileController.to.notificationStatus.value, onChanged: (value) {
+              //         ProfileController.to.notificationStatus.value = !ProfileController.to.notificationStatus.value;
+              //       }),
+              //     )
+              //   ],
+              // ),
+              // 40.verticalSpace,
+              // FilledButton(
+              //   style: FilledButton.styleFrom(
+              //       backgroundColor: Get.theme.colorScheme.error),
+              //   onPressed: () {},
+              //   child: Text(
+              //     "Hapus Akun",
+              //     style: TextStyle(color: Get.theme.colorScheme.onError),
+              //   ),
+              // ),
+              12.verticalSpace,
+              TonalButton(
+                onPressed: () {
+                  AuthService.to.signOut();
+                },
+                child: Text(
+                  "Logout",
+                  style: TextStyle(color: Get.theme.colorScheme.onSurface),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

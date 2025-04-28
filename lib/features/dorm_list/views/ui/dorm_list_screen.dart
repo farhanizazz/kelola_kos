@@ -18,6 +18,7 @@ class DormListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'tambah_kos',
         icon: Icon(Icons.add),
         label: Text('Tambah Kos'.tr),
         onPressed: () {

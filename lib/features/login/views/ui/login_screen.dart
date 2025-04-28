@@ -107,6 +107,18 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  12.verticalSpace,
+                  GestureDetector(
+                    onTap: () {
+                      Get.toNamed(Routes.residentLogin);
+                    },
+                    child: Text(
+                      "Masuk sebagai penghuni",
+                      style: Get.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.normal
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -8,4 +8,8 @@ abstract class Routes {
   static const String addRoomRoute = '/addRoom';
   static const String addResidentRoute = '/addResident';
   static const String detailDormRoute = '/detailDorm';
+  static const String searchRoute = '/search';
+  static const String residentLogin = '/login_penghuni';
+  static const String residentDashboard = '/dashboard_penghuni';
+  static const String otpVerification = '/otp_verification';
 }
