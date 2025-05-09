@@ -4,7 +4,7 @@ import 'package:kelola_kos/shared/repositories/main_repository.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 
 class DormListController extends GetxController {
-  final RxList<Dorm> dorms = GlobalService.dorms;
+  final RxList<Dorm> dorms = GlobalService.to.dorms;
 
   @override
   void onReady() {

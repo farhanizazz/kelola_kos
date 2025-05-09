@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:kelola_kos/shared/widgets/loading_bar.dart';
 import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
 
-class FirebaseService {
+class FirebaseService extends GetxService {
   // Singleton pattern
   static final FirebaseService _instance = FirebaseService._internal();
 

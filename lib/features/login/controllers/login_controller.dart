@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/services/firebase_service.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 
@@ -44,7 +45,7 @@ class LoginController extends GetxController {
   }
 
   Future<void> signInWithGoogle() async {
-    try {
+    safeCall(() async {
       final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return; // cancelled
@@ -61,10 +62,7 @@ class LoginController extends GetxController {
         "lastLoggedInAt": FieldValue.serverTimestamp(),
       };
       await firestoreService.setDocument('users', uid, userDoc, merge: true);
-    } catch (e, st) {
-      log('Google Sign-In Error: $e');
-      log('Stacktrace: $st');
-    }
+    });
   }
 
 

@@ -30,14 +30,43 @@ class DashboardScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             25.verticalSpace,
-            SizedBox(
-                width: 250,
-                child: Obx(
+            Row(
+              children: [
+                Obx(
                   () => Text(
                     '${'Halo'.tr} ${DashboardController.to.displayName}!',
                     style: Get.textTheme.headlineLarge,
                   ),
-                )),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () {
+                    Get.toNamed(Routes.notificationRoute);
+                  },
+                  icon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Icon(Icons.notifications),
+                      Visibility(
+                        visible: true,
+                        child: Positioned(
+                          right: -1,
+                          top: -1,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+
+              ],
+            ),
             20.verticalSpace,
             Hero(
               tag: 'search',
@@ -152,7 +181,9 @@ class DashboardScreen extends StatelessWidget {
                             ConnectionState.waiting) {
                           return Shimmer.fromColors(
                             baseColor: Get.theme.colorScheme.surfaceContainer,
-                            highlightColor: Get.theme.colorScheme.surfaceContainer.withOpacity(0.5),
+                            highlightColor: Get
+                                .theme.colorScheme.surfaceContainer
+                                .withOpacity(0.5),
                             child: Container(
                               height: 64,
                               width: double.infinity,
@@ -173,13 +204,17 @@ class DashboardScreen extends StatelessWidget {
 
                         final imageUrl = snapshot.data ?? '';
                         return Obx(
-                            () => CustomListItem(
+                          () => CustomListItem(
                             onTap: () => Get.toNamed(Routes.detailDormRoute,
                                 arguments: dorm.id),
                             image: imageUrl,
                             dormName: dorm.name,
-                            maxResident: GlobalService.rooms.where((room) => room.dormId == dorm.id).length,
-                            residentCount: GlobalService.residents.where((resident) => resident.dormId == dorm.id).length,
+                            maxResident: GlobalService.to.rooms
+                                .where((room) => room.dormId == dorm.id)
+                                .length,
+                            residentCount: GlobalService.to.residents
+                                .where((resident) => resident.dormId == dorm.id)
+                                .length,
                           ),
                         );
                       },

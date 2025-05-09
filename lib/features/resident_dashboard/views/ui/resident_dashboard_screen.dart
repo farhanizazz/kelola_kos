@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:kelola_kos/configs/routes/route.dart';
 import 'package:kelola_kos/features/resident_dashboard/constants/resident_dashboard_assets_constant.dart';
 import 'package:kelola_kos/features/resident_dashboard/controllers/resident_dashboard_controller.dart';
 import 'package:kelola_kos/utils/functions/resident_date_extension.dart';
 import 'package:kelola_kos/utils/services/auth_service.dart';
+import 'package:kelola_kos/utils/services/global_service.dart';
 
 class ResidentDashboardScreen extends StatelessWidget {
   ResidentDashboardScreen({Key? key}) : super(key: key);
@@ -21,9 +23,19 @@ class ResidentDashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               12.verticalSpace,
-              Text(
-                'Halo, ${ResidentDashboardController.to.resident.name}',
-                style: Get.textTheme.headlineLarge,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Obx(
+                  () => Text(
+                      'Halo, ${GlobalService.to.selectedResident.value!.name}',
+                      style: Get.textTheme.headlineLarge,
+                    ),
+                  ),
+                  TextButton(onPressed: () {
+                    ResidentDashboardController.to.editName();
+                  }, child: Text("Edit Nama"))
+                ],
               ),
               8.verticalSpace,
               RichText(
@@ -32,14 +44,12 @@ class ResidentDashboardScreen extends StatelessWidget {
                   style: Get.textTheme.bodyLarge,
                   children: [
                     TextSpan(
-                      text: ResidentDashboardController
-                                  .to.resident.paymentStatus ==
+                      text: GlobalService.to.selectedResident.value!.paymentStatus ==
                               true
                           ? 'Lunas'.tr
                           : 'Belum Lunas'.tr,
                       style: Get.textTheme.bodyLarge?.copyWith(
-                        color: ResidentDashboardController
-                                    .to.resident.paymentStatus ==
+                        color: GlobalService.to.selectedResident.value!.paymentStatus ==
                                 true
                             ? Get.theme.colorScheme.primary
                             : Get.theme.colorScheme.error,
@@ -50,10 +60,22 @@ class ResidentDashboardScreen extends StatelessWidget {
               ),
               8.verticalSpace,
               Text(
-                'Waktu pembayaran berikutnya adalah: ${ResidentDashboardController.to.resident.getNextPaymentDateString()}',
+                'Waktu pembayaran berikutnya adalah: ${GlobalService.to.selectedResident.value!.getNextPaymentDateString()}',
                 style: Get.textTheme.bodyLarge,
               ),
               24.verticalSpace,
+              SizedBox(
+                width: 1.sw,
+                child: TextButton(
+                  onPressed: () {
+                    Get.toNamed(Routes.addResidentRoute, arguments: {
+                      'resident': GlobalService.to.selectedResident.value,});
+                  },
+                  child: Text(
+                    'Edit data',
+                  ),
+                ),
+              ),
               SizedBox(
                 width: 1.sw,
                 child: TextButton(
@@ -70,7 +92,7 @@ class ResidentDashboardScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),

@@ -1,9 +1,8 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/features/add_room/constants/add_room_api_constant.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
@@ -38,13 +37,10 @@ class AddRoomRepository {
     required String dormId,
     required Room room,
   }) async {
-    try {
+    safeCall(() async {
       final roomRef = FirebaseFirestore.instance.collection('Rooms').doc(room.id);
       await firestoreClient.updateDocument('Rooms', roomRef.id,room.toMap());
-    } catch (e) {
-      log('Error updating room: $e');
-      rethrow;
-    }
+    });
   }
 
   var apiConstant = AddRoomApiConstant();

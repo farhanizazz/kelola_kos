@@ -1,5 +1,8 @@
+import 'package:kelola_kos/utils/functions/normalize_phone_number.dart';
+
 class Resident {
   final String id;
+  final String ownerId;
   final String name;
   final String phone;
   final String roomId;
@@ -12,6 +15,7 @@ class Resident {
   Resident({
     required this.paymentDay,
     required this.paymentMonth,
+    required this.ownerId,
     required this.id,
     required this.name,
     required this.phone,
@@ -23,9 +27,10 @@ class Resident {
 
   factory Resident.fromMap(Map<String, dynamic> data) {
     return Resident(
+      ownerId: data['userId'],
       paymentDay: data['paymentDay'],
       paymentMonth: data['paymentMonth'],
-      id: data['id'] ?? '',
+      id: normalizePhoneNumber(data['phone']),
       name: data['name'] ?? '',
       phone: data['phone'] ?? '',
       roomId: data['roomId'] ?? '',
@@ -80,5 +85,10 @@ class Resident {
     dormId.hashCode ^
     recurrenceInterval.hashCode ^
     paymentStatus.hashCode;
+  }
+
+  @override
+  String toString() {
+    return 'Resident{id: $id, name: $name, phone: $phone, roomId: $roomId, dormId: $dormId, paymentDay: $paymentDay, paymentMonth: $paymentMonth, paymentStatus: $paymentStatus, recurrenceInterval: $recurrenceInterval}';
   }
 }

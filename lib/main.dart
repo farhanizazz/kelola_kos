@@ -46,6 +46,10 @@ void callbackDispatcher() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  GlobalBinding().dependencies();
   await Hive.initFlutter();
   await Hive.openBox("venturo");
   await Hive.openBox('notification');
@@ -58,33 +62,16 @@ void main() async {
     url: dotenv.env['SUPABASE_URL'] ?? '',
     anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
-  await Workmanager().registerPeriodicTask(
-    "reschedule_notifications_id",
-    "rescheduleNotificationsTask",
-    frequency: const Duration(hours: 24),
-    initialDelay: const Duration(minutes: 1),
-    constraints: Constraints(
-      networkType: NetworkType.not_required,
-      requiresBatteryNotLow: false,
-      requiresCharging: false,
-      requiresDeviceIdle: false,
-      requiresStorageNotLow: false,
-    ),
-  );
-  await Workmanager().cancelByUniqueName("reschedule_on_launch");
-  await Workmanager().registerOneOffTask(
-    "reschedule_on_launch",
-    "rescheduleOnLaunch",
-    initialDelay: const Duration(seconds: 10),
-  );
+  // await Workmanager().cancelByUniqueName("reschedule_on_launch");
+  // await Workmanager().registerOneOffTask(
+  //   "reschedule_on_launch",
+  //   "rescheduleOnLaunch",
+  //   initialDelay: const Duration(seconds: 10),
+  // );
 
   tz.initializeTimeZones();
   NotificationService().init();
   GoogleSignInService.init();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  GlobalBinding().dependencies();
   /// Change your options.dns with your project !!!!
   await SentryFlutter.init(
     (options) {

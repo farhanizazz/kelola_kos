@@ -8,6 +8,7 @@ import 'package:kelola_kos/features/detail_dorm/repositories/detail_dorm_reposit
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
 import 'package:kelola_kos/shared/repositories/main_repository.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 
 class DetailDormController extends GetxController {
@@ -25,26 +26,23 @@ class DetailDormController extends GetxController {
   }
 
   void _bindRoomStream() {
-    room.bindStream(GlobalService.rooms.stream.map(
+    room.bindStream(GlobalService.to.rooms.stream.map(
       (rooms) {
         log(rooms.toString(), name: "Room in detail dorm controller stream ");
         return rooms.where((r) => r.dormId == id).toList();
       },
     ));
-    final latestRooms = GlobalService.rooms;
+    final latestRooms = GlobalService.to.rooms;
     room.value = latestRooms.where((r) => r.dormId == id).toList();
-    log(GlobalService.rooms.toString(), name: "Room in detail dorm controller");
+    log(GlobalService.to.rooms.toString(), name: "Room in detail dorm controller");
     log(id, name: "Dorm id in detail dorm controller");
   }
 
   Future<void> _getDorm() async {
-    try {
+    safeCall(() async {
       dorm.value = await DetailDormRepository.getDorm(id);
       dorm.refresh();
-    } catch (e, st) {
-      log(e.toString(), name: "Error");
-      log(st.toString(), name: "Stacktrace");
-    }
+    });
   }
 
   Future<void> addRoom() async {

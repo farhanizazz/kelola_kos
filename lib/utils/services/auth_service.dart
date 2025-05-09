@@ -7,18 +7,20 @@ import 'package:kelola_kos/configs/routes/route.dart';
 import 'package:kelola_kos/features/resident_list/models/resident.dart';
 import 'package:kelola_kos/shared/models/user.dart';
 import 'package:kelola_kos/utils/functions/show_confirmation_bottom_sheet.dart';
+import 'package:kelola_kos/utils/services/firebase_messaging_service.dart';
 import 'package:kelola_kos/utils/services/firebase_service.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
+import 'package:kelola_kos/utils/services/notification_service.dart';
 import 'package:workmanager/workmanager.dart';
 
 class AuthService extends GetxService {
   static AuthService get to => Get.find<AuthService>();
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseService firebaseService = FirebaseService();
-  final firestoreClient = FirestoreService();
+  late final FirebaseAuth _auth;
+  final FirebaseService firebaseService = Get.find<FirebaseService>();
+  final firestoreClient = Get.find<FirestoreService>();
   final Rxn<Resident> resident = Rxn<Resident>();
   Rxn<User> firebaseUser = Rxn<User>();
   final RxInt authCount = 0.obs;
@@ -29,6 +31,7 @@ class AuthService extends GetxService {
   @override
   void onReady() {
     super.onReady();
+    _auth = FirebaseAuth.instance;
     _initAuthStream();
   }
 
@@ -45,7 +48,7 @@ class AuthService extends GetxService {
     try {
       if (user == null) {
         Get.offAllNamed(Routes.loginRoute);
-        GlobalService.unbindStreams();
+        GlobalService.to.unbindStreams();
         await LocalStorageService.deleteAuth();
         await Workmanager().cancelAll().then((value) {
           log('Workmanager Cancelled');
@@ -53,31 +56,83 @@ class AuthService extends GetxService {
         if (resident.value != null) {
           resident.value = null;
         }
+        if(GlobalService.to.selectedResident.value != null) {
+          GlobalService.to.selectedResident.value = null;
+        }
+        FirebaseMessagingService.to.disposeFCM();
+        LocalStorageService.clearNotifications();
       } else {
         try {
           final user = FirebaseAuth.instance.currentUser;
           if (user == null) return;
 
           // Check if the user authenticated via phone number
-          bool isPhoneAuth = user.providerData.any((info) =>
-          info.providerId == 'phone');
+          bool isPhoneAuth =
+              user.providerData.any((info) => info.providerId == 'phone');
 
           if (isPhoneAuth) {
-            final doc = await firestoreClient.getDocument('Residents', user.phoneNumber!);
-            resident.value = Resident.fromMap(doc?.data() as Map<String, dynamic>);
-            Get.offAllNamed(Routes.residentDashboard, arguments: resident.value);
+            GlobalService.to.bindResidentByPhoneNumberStream(user.phoneNumber!);
+            final doc = await firestoreClient.getDocument(
+                'Residents', user.phoneNumber!);
+            resident.value =
+                Resident.fromMap(doc?.data() as Map<String, dynamic>);
+            await NotificationService().scheduleWithPermissionGuard(
+              id: resident.value!.phone.codeUnits.reduce((a, b) => a + b) %
+                  1000000,
+              day: resident.value!.paymentDay,
+              month: resident.value!.paymentMonth,
+              residentName: resident.value!.name,
+              notificationInterval: resident.value!.recurrenceInterval,
+            );
+            await Workmanager()
+                .cancelByUniqueName("reschedule_notifications_id");
+            await Workmanager().registerPeriodicTask(
+              "reschedule_notifications_id",
+              "rescheduleResidentNotificationsTask",
+              frequency: const Duration(hours: 24),
+              initialDelay: const Duration(minutes: 1),
+              constraints: Constraints(
+                networkType: NetworkType.not_required,
+                requiresBatteryNotLow: false,
+                requiresCharging: false,
+                requiresDeviceIdle: false,
+                requiresStorageNotLow: false,
+              ),
+            );
+            log(resident.value.toString(), name: "Resident");
+            FirebaseMessagingService.to.initFCM(userType: UserType.resident);
+            Get.offAllNamed(Routes.residentDashboard,
+                arguments: resident.value);
           } else {
-            final doc = await FirestoreService.to.getDocument('users', user.uid);
+            await Workmanager()
+                .cancelByUniqueName("reschedule_notifications_id");
+            await Workmanager().registerPeriodicTask(
+              "reschedule_notifications_id",
+              "rescheduleOwnerNotificationsTask",
+              frequency: const Duration(hours: 24),
+              initialDelay: const Duration(minutes: 1),
+              constraints: Constraints(
+                networkType: NetworkType.not_required,
+                requiresBatteryNotLow: false,
+                requiresCharging: false,
+                requiresDeviceIdle: false,
+                requiresStorageNotLow: false,
+              ),
+            );
+            final doc =
+                await FirestoreService.to.getDocument('users', user.uid);
 
             if (doc != null && doc.exists) {
               final data = doc.data() as Map<String, dynamic>;
               final firestoreUser = FirestoreUser.fromMap(user.uid, data);
 
               await LocalStorageService.setAuth(firestoreUser);
-              GlobalService.bindResidentStream();
-              GlobalService.bindRoomStream();
-              GlobalService.bindDormsStream();
+              GlobalService.to.bindResidentsStream();
+              GlobalService.to.bindRoomStream();
+              GlobalService.to.bindDormsStream();
+              GlobalService.to.bindChangeRequestsStream();
             }
+            FirebaseMessagingService.to.initFCM(userType: UserType.owner);
 
             if (!Get.currentRoute.endsWith(Routes.navigationRoute)) {
               Get.offAllNamed(Routes.navigationRoute);
@@ -110,6 +165,15 @@ class AuthService extends GetxService {
       message: 'Apakah kamu yakin mau logout?.',
       onConfirm: () async {
         firebaseService.execute(() async {
+          try {
+            await FirebaseMessagingService.to.clearFCMToken(
+                userType: resident.value != null ? UserType.resident : UserType
+                    .owner);
+            log('FCM token cleared', name: "FCM Token");
+          } catch(e, st) {
+            log(e.toString(), name: "Error clearing FCM token");
+            log(st.toString(), name: "Stacktrace");
+          }
           await _auth.signOut();
         });
       },

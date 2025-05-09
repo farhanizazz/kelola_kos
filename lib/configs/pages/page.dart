@@ -20,6 +20,8 @@ import 'package:kelola_kos/features/login_penghuni/features/otp_verification/vie
 import 'package:kelola_kos/features/login_penghuni/views/ui/login_penghuni_screen.dart';
 import 'package:kelola_kos/features/navigation/bindings/navigation_binding.dart';
 import 'package:kelola_kos/features/navigation/views/ui/navigation_screen.dart';
+import 'package:kelola_kos/features/notification/bindings/notification_binding.dart';
+import 'package:kelola_kos/features/notification/views/ui/notification_screen.dart';
 import 'package:kelola_kos/features/profile/bindings/profile_binding.dart';
 import 'package:kelola_kos/features/register/bindings/register_binding.dart';
 import 'package:kelola_kos/features/register/views/ui/register_screen.dart';
@@ -82,6 +84,11 @@ abstract class Pages {
       name: Routes.residentLogin,
       page: () => LoginPenghuniScreen(),
       binding: LoginPenghuniBinding(),
+    ),
+    GetPage(
+      name: Routes.notificationRoute,
+      page: () => NotificationScreen(),
+      binding: NotificationBinding(),
     ),
     GetPage(
       name: Routes.otpVerification,

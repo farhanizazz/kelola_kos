@@ -26,6 +26,11 @@ class LocalStorageService extends GetxService {
     box.clear();
     log("success", name: "deleteAuth status");
   }
+  static Future<void> clearNotifications() async {
+    final box = Hive.box('notification');
+    await box.clear();
+    log('Notifications cleared');
+  }
 
   static Future<void> saveScheduledNotification(ScheduledNotification notification) async {
     final box = Hive.box('notification');

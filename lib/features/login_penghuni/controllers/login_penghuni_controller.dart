@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/configs/routes/route.dart';
 import 'package:kelola_kos/utils/functions/normalize_phone_number.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
 import 'package:kelola_kos/utils/services/firebase_service.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
@@ -24,7 +25,7 @@ class LoginPenghuniController extends GetxController {
 
   Future<void> signInWithPhone() async {
     if (formKey.currentState!.validate()) {
-      try {
+      safeCall(() async {
         final normalizedPhone = normalizePhoneNumber(phoneCtrl.text);
         final doc =
             await firestoreClient.getDocument('Residents', normalizedPhone);
@@ -58,10 +59,7 @@ class LoginPenghuniController extends GetxController {
             },
           );
         });
-      } catch (e, st) {
-        log(e.toString(), name: 'LoginPenghuniController');
-        log(st.toString(), name: 'LoginPenghuniController');
-      }
+      });
     }
   }
 

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/features/add_room/repositories/add_room_repository.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
+import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
 
 class AddRoomController extends GetxController {
   static AddRoomController get to => Get.find();
@@ -79,7 +81,7 @@ class AddRoomController extends GetxController {
     final isValid = AddRoomController.to.validateForm();
     if (Get.arguments != null) {
       if (isValid) {
-        try {
+        safeCall(() async {
           final res = await AddRoomRepository.updateRoom(
             dormId: Get.arguments['dormId'],
             room: Room(
@@ -91,10 +93,7 @@ class AddRoomController extends GetxController {
             ),
           );
           Get.back(result: true);
-        } catch (e, st) {
-          log(e.toString());
-          log(st.toString());
-        }
+        });
       }
     }
   }
@@ -127,6 +126,7 @@ class AddRoomController extends GetxController {
         } catch (e, st) {
           log(e.toString());
           log(st.toString());
+          showErrorBottomSheet('Error', 'Terjadi kesalahan saat menambahkan kamar');
         } finally {
           Get.back(result: true);
         }

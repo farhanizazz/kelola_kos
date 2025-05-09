@@ -13,7 +13,7 @@ import 'package:kelola_kos/utils/services/local_storage_service.dart';
 
 class DashboardController extends GetxController {
   final displayName = ''.obs;
-  final RxList<Dorm> dorms = GlobalService.dorms;
+  final RxList<Dorm> dorms = GlobalService.to.dorms;
 
   final httpClient = HttpService.dioCall();
   final FirestoreService firestoreService = FirestoreService();
@@ -49,7 +49,7 @@ class DashboardController extends GetxController {
   }
 
   int get residentsTotal {
-    return GlobalService.residents.length;
+    return GlobalService.to.residents.length;
   }
 
   Future<void> deleteDorm(String dormId) async {

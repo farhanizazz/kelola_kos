@@ -8,6 +8,7 @@ import 'package:kelola_kos/features/detail_dorm/constants/detail_dorm_assets_con
 import 'package:kelola_kos/features/detail_dorm/controllers/detail_dorm_controller.dart';
 import 'package:kelola_kos/shared/models/room.dart';
 import 'package:kelola_kos/utils/functions/price_format.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 
 class DetailDormScreen extends StatelessWidget {
@@ -62,12 +63,9 @@ class DetailDormScreen extends StatelessWidget {
                         12.verticalSpace,
                         FilledButton(
                           onPressed: () async {
-                            try {
+                            safeCall(() async {
                               await DetailDormController.to.addRoom();
-                            } catch (e, st) {
-                              log(e.toString(), name: "Detail error");
-                              log(st.toString(), name: "Detail ST");
-                            }
+                            });
                           },
                           child: Text("+ ${'Kamar'.tr}"),
                         ),
@@ -84,7 +82,7 @@ class DetailDormScreen extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final Room room = rooms[index];
                             return Obx(() {
-                              final resident = GlobalService.residents
+                              final resident = GlobalService.to.residents
                                   .firstWhereOrNull((r) => r.roomId == room.id);
                               return GestureDetector(
                                 onLongPressStart: (details) async {
@@ -127,7 +125,7 @@ class DetailDormScreen extends StatelessWidget {
                                   );
 
                                   if (selectedValue == 'editRoom') {
-                                    try {
+                                    safeCall(() async {
                                       final result = await Get.toNamed(
                                           Routes.addRoomRoute,
                                           arguments: {
@@ -138,10 +136,7 @@ class DetailDormScreen extends StatelessWidget {
                                       if (result == true) {
                                         DetailDormController.to.refresh();
                                       }
-                                    } catch (e, st) {
-                                      log(e.toString());
-                                      log(st.toString());
-                                    }
+                                    });
                                   } else if (selectedValue == 'delete') {
                                     DetailDormController.to
                                         .deleteRoom(room.id!);
@@ -153,7 +148,7 @@ class DetailDormScreen extends StatelessWidget {
                                 },
                                 child: ListTile(
                                   onTap: () {
-                                    log(GlobalService.residents.toString());
+                                    log(GlobalService.to.residents.toString());
                                     Get.toNamed(Routes.addResidentRoute,
                                         arguments: {
                                           'dormId': room.dormId,
@@ -198,12 +193,9 @@ class DetailDormScreen extends StatelessWidget {
                         4.verticalSpace,
                         FilledButton(
                           onPressed: () async {
-                            try {
+                             safeCall(() async {
                               await DetailDormController.to.addRoom();
-                            } catch (e, st) {
-                              log(e.toString(), name: "Detail error");
-                              log(st.toString(), name: "Detail ST");
-                            }
+                            });
                           },
                           child: Text("+ ${"Kamar".tr}"),
                         ),

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:kelola_kos/features/add_resident/constants/add_resident_assets_constant.dart';
 import 'package:kelola_kos/features/add_resident/controllers/add_resident_controller.dart';
 import 'package:kelola_kos/features/add_resident/repositories/add_resident_repository.dart';
+import 'package:kelola_kos/utils/services/global_service.dart';
 
 class AddResidentScreen extends StatelessWidget {
   AddResidentScreen({Key? key}) : super(key: key);
@@ -56,14 +57,21 @@ class AddResidentScreen extends StatelessWidget {
                     ],
                   ),
                   14.verticalSpace,
-                  TextFormField(
-                    decoration: InputDecoration(
-                      label: Text('Nama Penghuni'.tr),
+                  Visibility(
+                    visible: GlobalService.to.selectedResident.value == null,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          decoration: InputDecoration(
+                            label: Text('Nama Penghuni'.tr),
+                          ),
+                          controller: AddResidentController.to.residentNameController,
+                          validator: AddResidentController.to.validateField,
+                        ),
+                        12.verticalSpace,
+                      ],
                     ),
-                    controller: AddResidentController.to.residentNameController,
-                    validator: AddResidentController.to.validateField,
                   ),
-                  12.verticalSpace,
                   TextFormField(
                     decoration: InputDecoration(
                       label: Text('Nomor Telepon Penghuni'.tr),
@@ -71,30 +79,37 @@ class AddResidentScreen extends StatelessWidget {
                     controller: AddResidentController.to.residentPhoneController,
                     validator: AddResidentController.to.validateField,
                   ),
-                  12.verticalSpace,
-                  LayoutBuilder(builder: (context, constraint) {
-                    return Obx(
-                      () => DropdownMenu(
-                        controller: AddResidentController.to.dormController,
-                        width: constraint.maxWidth,
-                        initialSelection: null,
-                        label: Text('Kos'),
-                        dropdownMenuEntries: AddResidentController.to.dorms
-                            .map(
-                              (dorm) => DropdownMenuEntry(
-                                value: dorm.id,
-                                label: dorm.name,
-                              ),
-                            )
-                            .toList(),
-                        onSelected: (value) {
-                          if (value != null) {
-                            AddResidentController.to.changeDorm(value);
-                          }
-                        },
-                      ),
-                    );
-                  }),
+                  Visibility(
+                    visible: GlobalService.to.selectedResident.value == null,
+                    child: LayoutBuilder(builder: (context, constraint) {
+                      return Obx(
+                        () => Column(
+                          children: [
+                            12.verticalSpace,
+                            DropdownMenu(
+                              controller: AddResidentController.to.dormController,
+                              width: constraint.maxWidth,
+                              initialSelection: null,
+                              label: Text('Kos'),
+                              dropdownMenuEntries: AddResidentController.to.dorms
+                                  .map(
+                                    (dorm) => DropdownMenuEntry(
+                                      value: dorm.id,
+                                      label: dorm.name,
+                                    ),
+                                  )
+                                  .toList(),
+                              onSelected: (value) {
+                                if (value != null) {
+                                  AddResidentController.to.changeDorm(value);
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ),
                   Obx(
                     () => Visibility(
                       visible: AddResidentController.to.rooms.isNotEmpty,
@@ -238,30 +253,37 @@ class AddResidentScreen extends StatelessWidget {
                     },
                     validator: AddResidentController.to.validateField,
                   ),
-                  12.verticalSpace,
-                  TextFormField(
-                    decoration: InputDecoration(hintText: "Catatan (Optional)".tr),
-                    maxLines: 5,
-                  ),
-                  12.verticalSpace,
-                  Obx(
-                    () => Visibility(
-                      visible: AddResidentController.to.isEdit.value,
-                      child: Row(
-                        children: [
-                          Switch(
-                              value: AddResidentController.to.paymentStatus.value,
-                              onChanged: (value) {
-                                AddResidentController.to.paymentStatus.value =
-                                    !AddResidentController.to.paymentStatus.value;
-                              }),
-                          5.horizontalSpace,
-                          Text('Status Pembayaran'.tr)
-                        ],
-                      ),
+                  Visibility(
+                    visible: GlobalService.to.selectedResident.value == null,
+                    child: Column(
+                      children: [
+                        12.verticalSpace,
+                        TextFormField(
+                          decoration: InputDecoration(hintText: "Catatan (Optional)".tr),
+                          maxLines: 5,
+                        ),
+                        12.verticalSpace,
+                        Obx(
+                              () => Visibility(
+                            visible: AddResidentController.to.isEdit.value,
+                            child: Row(
+                              children: [
+                                Switch(
+                                    value: AddResidentController.to.paymentStatus.value,
+                                    onChanged: (value) {
+                                      AddResidentController.to.paymentStatus.value =
+                                      !AddResidentController.to.paymentStatus.value;
+                                    }),
+                                5.horizontalSpace,
+                                Text('Status Pembayaran'.tr)
+                              ],
+                            ),
+                          ),
+                        ),
+                        12.verticalSpace,
+                      ],
                     ),
                   ),
-                  12.verticalSpace,
                   Column(
                     children: [
                       12.verticalSpace,

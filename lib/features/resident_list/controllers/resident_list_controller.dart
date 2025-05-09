@@ -23,7 +23,7 @@ class ResidentListController extends GetxController {
   }
 
   void filterResidents() {
-    final all = GlobalService.residents;
+    final all = GlobalService.to.residents;
     switch (selectedCategory.value) {
       case 'paid':
         residents.value = all.where((r) => r.paymentStatus == true).toList();

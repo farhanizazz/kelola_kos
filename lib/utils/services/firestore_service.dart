@@ -17,13 +17,20 @@ class FirestoreService extends GetxService {
   @override
   void onInit() {
     log('[FirestoreService] Initialized');
+
     super.onInit();
   }
 
+  @override
+  void onReady() {
+    super.onReady();
+  }
+
   /// Logs Firestore actions
-  void _log(String message, {dynamic error}) {
+  void _log(String message, {dynamic error, dynamic st}) {
     if (error != null) {
       log('[Firestore ERROR] $message: $error');
+      log('[Firestore Stacktrace] $message: $st');
       showErrorBottomSheet("Error", error.toString());
     } else {
       log('[Firestore SUCCESS] $message');
@@ -61,7 +68,7 @@ class FirestoreService extends GetxService {
       );
       _hideLoading();
       _log('Document set in $collectionPath/$docId');
-    } catch (e) {
+    } catch (e,st) {
       _hideLoading();
       _log('Failed to set document in $collectionPath/$docId', error: e);
     }
@@ -111,29 +118,35 @@ class FirestoreService extends GetxService {
   }
 
   /// Deletes a document
-  Future<bool> deleteDocument(String collectionPath, String docId) async {
+  Future<bool> deleteDocument(String collectionPath, String docId, {bool showConfirmation = true}) async {
     final completer = Completer<bool>();
 
-    try {
-      showConfirmationBottomSheet(
-        title: 'Apakah kamu yakin?',
-        message: 'Tindakan ini akan menghapus item secara permanen.',
-        onConfirm: () async {
-          try {
-            _showLoading();
-            await _firestore.collection(collectionPath).doc(docId).delete();
-            _log('Document deleted in $collectionPath/$docId');
-            _hideLoading();
+    if(showConfirmation) {
+      try {
+        await showConfirmationBottomSheet(
+          title: 'Apakah kamu yakin?',
+          message: 'Tindakan ini akan menghapus item secara permanen.',
+          onConfirm: () {
             completer.complete(true);
-          } catch (e) {
-            _log('Failed to delete document in $collectionPath/$docId', error: e);
-            completer.complete(false);
-          }
-        },
-      );
-    } catch (e) {
-      _log('Failed to show confirmation for deleting $collectionPath/$docId', error: e);
-      completer.complete(false);
+          },
+        );
+      } catch (e) {
+        _log('Failed to show confirmation for deleting $collectionPath/$docId',
+            error: e);
+        completer.complete(false);
+      }
+    } else {
+      completer.complete(true);
+    }
+    if(completer.isCompleted) {
+      try {
+        _showLoading();
+        await _firestore.collection(collectionPath).doc(docId).delete();
+        _log('Document deleted in $collectionPath/$docId');
+        _hideLoading();
+      } catch (e) {
+        _log('Failed to delete document in $collectionPath/$docId', error: e);
+      }
     }
 
     return completer.future;

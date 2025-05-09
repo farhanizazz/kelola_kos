@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:kelola_kos/features/detail_dorm/constants/detail_dorm_api_constant.dart';
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
 
@@ -13,24 +14,18 @@ class DetailDormRepository {
   static const userId = 1;
 
   static Future<Dorm> getDorm(String id) async {
-    try {
-      return GlobalService.dorms.where((dorm) => dorm.id == id).first;
-    } catch (e, st) {
-      log(e.toString());
-      log(st.toString());
-      rethrow;
-    }
+    safeCall(() async {
+      return GlobalService.to.dorms.where((dorm) => dorm.id == id).first;
+    });
+    throw Exception('Dorm not found');
   }
 
   static Future<List<Room>> getRoom(String dormId) async {
-    try {
-      log(GlobalService.rooms.toString(), name: 'Room in detail room repo');
-      return GlobalService.rooms.where((room) => room.dormId == dormId).toList();
-    } catch (e, st) {
-      log(e.toString());
-      log(st.toString());
-      rethrow;
-    }
+    safeCall(() async {
+      log(GlobalService.to.rooms.toString(), name: 'Room in detail room repo');
+      return GlobalService.to.rooms.where((room) => room.dormId == dormId).toList();
+    });
+    throw Exception('Room not found');
   }
 
   var apiConstant = DetailDormApiConstant();

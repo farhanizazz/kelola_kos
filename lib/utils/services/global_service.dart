@@ -6,8 +6,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/features/resident_list/models/resident.dart';
+import 'package:kelola_kos/shared/models/change_request.dart';
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/http_service.dart';
 import 'package:kelola_kos/utils/services/notification_service.dart';
@@ -15,11 +17,18 @@ import 'package:kelola_kos/utils/services/notification_service.dart';
 import 'local_storage_service.dart';
 
 class GlobalService extends GetxService {
-  static RxList<Dorm> dorms = <Dorm>[].obs;
-  static RxList<Resident> residents = <Resident>[].obs;
-  static RxList<Room> rooms = <Room>[].obs;
-  static final FirestoreService firestoreClient = FirestoreService();
+  static GlobalService get to => Get.find<GlobalService>();
 
+  RxList<Dorm> dorms = <Dorm>[].obs;
+  RxList<Resident> residents = <Resident>[].obs;
+  RxList<Room> rooms = <Room>[].obs;
+  RxList<ChangeRequest> changeRequests = <ChangeRequest>[].obs;
+  /// Holds the currently logged-in resident, identified by their phone number.
+  ///
+  /// This value is populated after a successful login via phone number authentication. Refer to auth_service.dart to see the binding
+  Rxn<Resident> selectedResident = Rxn<Resident>();
+
+  final FirestoreService firestoreClient = FirestoreService();
 
   @override
   void onInit() async {
@@ -33,10 +42,13 @@ class GlobalService extends GetxService {
     ever(rooms, (value) {
       log(rooms.toString(), name: 'GlobalService Room');
     });
+    ever(changeRequests, (value) {
+      log(changeRequests.toString(), name: 'GlobalService ChangeRequest');
+    });
     super.onInit();
   }
 
-  static void bindDormsStream() {
+  void bindDormsStream() {
     log('Binding dorms with userId: $userId', name: 'DormStream');
     dorms.bindStream(
       firestoreClient
@@ -53,7 +65,30 @@ class GlobalService extends GetxService {
     );
   }
 
-  static void bindRoomStream() {
+  void bindChangeRequestsStream() {
+    log('Binding change request with userId: $userId', name: 'ChangeRequestStream');
+    changeRequests.bindStream(
+      firestoreClient
+          .collection('Change Request')
+          .where('receiverUserId', isEqualTo: userId)
+          .snapshots()
+          .map((QuerySnapshot snapshot) {
+        return snapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          log(data.toString(), name: 'ChangeRequestStream');
+          try {
+            return ChangeRequest.fromMap(
+                {...data, 'id': doc.id});
+          } catch (e) {
+            log('Error parsing change request: $e', name: 'ChangeRequestStream');
+            rethrow;
+          }
+        }).toList();
+      }),
+    );
+  }
+
+  void bindRoomStream() {
     try {
       log('Binding rooms with userId: $userId', name: 'RoomStream');
       rooms.bindStream(
@@ -85,7 +120,7 @@ class GlobalService extends GetxService {
     }
   }
 
-  static void bindResidentStream() {
+  void bindResidentsStream() {
     try {
       log('Binding resident with userId: $userId', name: 'ResidentStream');
       residents.bindStream(
@@ -95,7 +130,7 @@ class GlobalService extends GetxService {
             .snapshots()
             .handleError((error) => log('Stream error: $error'))
             .map((QuerySnapshot snapshot) {
-          final list = snapshot.docs
+          final residents = snapshot.docs
               .map((doc) {
                 try {
                   final data = doc.data() as Map<String, dynamic>;
@@ -108,7 +143,7 @@ class GlobalService extends GetxService {
               .whereType<Resident>()
               .toList();
 
-          for (final r in list) {
+          for (final r in residents) {
             final id = r.id.hashCode;
             NotificationService().cancel(id);
             NotificationService().scheduleWithPermissionGuard(
@@ -120,7 +155,7 @@ class GlobalService extends GetxService {
             );
           }
 
-          return list;
+          return residents;
         }),
       );
     } catch (e, st) {
@@ -129,7 +164,22 @@ class GlobalService extends GetxService {
     }
   }
 
-  static void unbindStreams() {
+  void bindResidentByPhoneNumberStream(String phoneNumber) {
+    safeCall(() async {
+      selectedResident.bindStream(firestoreClient
+          .collection('Residents')
+          .doc(phoneNumber)
+          .snapshots()
+          .map((DocumentSnapshot snapshot) {
+            final data = snapshot.data() as Map<String, dynamic>;
+        final Resident resident =
+            Resident.fromMap(snapshot.data() as Map<String, dynamic>);
+        return resident;
+      }));
+    });
+  }
+
+  void unbindStreams() {
     try {
       dorms.close();
       rooms.close();
@@ -146,7 +196,8 @@ class GlobalService extends GetxService {
     }
   }
 
-  static String? get userId => LocalStorageService.box.get(LocalStorageConstant.USER_ID);
+  static String? get userId =>
+      LocalStorageService.box.get(LocalStorageConstant.USER_ID);
 }
 
 // Private repository inside MainService

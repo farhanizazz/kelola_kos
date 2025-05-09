@@ -118,8 +118,8 @@ class SearchScreen extends StatelessWidget {
                                       arguments: dorm.id),
                                   image: imageUrl,
                                   dormName: dorm.name,
-                                  maxResident: GlobalService.rooms.where((room) => room.dormId == dorm.id).length,
-                                  residentCount: GlobalService.residents.where((resident) => resident.dormId == dorm.id).length,
+                                  maxResident: GlobalService.to.rooms.where((room) => room.dormId == dorm.id).length,
+                                  residentCount: GlobalService.to.residents.where((resident) => resident.dormId == dorm.id).length,
                                 ),
                               );
                             },

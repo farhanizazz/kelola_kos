@@ -12,4 +12,5 @@ abstract class Routes {
   static const String residentLogin = '/login_penghuni';
   static const String residentDashboard = '/dashboard_penghuni';
   static const String otpVerification = '/otp_verification';
+  static const String notificationRoute = '/notification';
 }

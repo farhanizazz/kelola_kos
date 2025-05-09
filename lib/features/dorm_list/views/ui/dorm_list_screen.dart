@@ -79,10 +79,10 @@ class DormListScreen extends StatelessWidget {
                               name: dorm.name,
                               imageUrl: imageUrl,
                               location: dorm.location,
-                              residentAmount: GlobalService.residents
+                              residentAmount: GlobalService.to.residents
                                   .where((resident) => resident.dormId == dorm.id)
                                   .length,
-                              residentMax: GlobalService.rooms
+                              residentMax: GlobalService.to.rooms
                                   .where((room) => room.dormId == dorm.id)
                                   .length,
                               onTap: () {

@@ -51,7 +51,7 @@ Future<void> showConfirmationBottomSheet({
                     Get.back();
                     onConfirm();
                   },
-                  child: Text("Hapus"),
+                  child: Text("Konfirmasi"),
                 ),
               ),
             ],

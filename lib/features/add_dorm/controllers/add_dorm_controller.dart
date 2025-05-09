@@ -11,6 +11,7 @@ import 'package:kelola_kos/features/add_room/controllers/add_room_controller.dar
 import 'package:kelola_kos/features/add_room/views/ui/add_room_screen.dart';
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
@@ -48,16 +49,12 @@ class AddDormController extends GetxController {
       imageUrlController.text = arguments.image ?? '';
       noteController.text = arguments.note ?? '';
       rooms.assignAll(
-          GlobalService.rooms.where((room) => room.dormId == arguments.id));
-      try {
+          GlobalService.to.rooms.where((room) => room.dormId == arguments.id));
+      safeCall(() async {
         final supabaseImageUrl = await SupabaseService.getImage(arguments.image ?? '');
         log(supabaseImageUrl, name: 'Supabase Image');
         imageUrl.value = supabaseImageUrl;
-      } catch (e, st) {
-        log(arguments.image ?? '');
-        log(e.toString(), name: 'Supabase Image');
-        log(st.toString(), name: 'Supabase Image');
-      }
+      });
     }
   }
 
@@ -152,10 +149,12 @@ class AddDormController extends GetxController {
         );
         return;
       }
-      try {
+
+      safeCall(() async {
         FirestoreService firestore = FirestoreService.to;
         WriteBatch batch = FirebaseFirestore.instance.batch();
-        String clean(String text) => text.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '');
+        String clean(String text) =>
+            text.toLowerCase().replaceAll(RegExp(r'[^\w\s]'), '');
         final tokens = {
           ...clean(dormNameController.text).split(' '),
           ...clean(locationController.text).split(' '),
@@ -174,7 +173,8 @@ class AddDormController extends GetxController {
           final dormId = arguments.id!;
           await firestore.updateDocument("Dorms", dormId, dormData);
         } else {
-          final String imagePath = await SupabaseService.uploadImage(dormImage.value!);
+          final String imagePath =
+              await SupabaseService.uploadImage(dormImage.value!);
           final dormData = {
             'userId': LocalStorageService.box.get(LocalStorageConstant.USER_ID),
             'name': dormNameController.text,
@@ -205,22 +205,17 @@ class AddDormController extends GetxController {
         if (Get.isBottomSheetOpen != true) {
           Get.back();
         }
-      } catch (e, st) {
-        log(e.toString());
-      }
+      });
     }
   }
 
   Future<void> pickImage() async {
-    try {
+    safeCall(() async {
       final picked = await _picker.pickImage(source: ImageSource.gallery);
       if (picked != null) {
         dormImage.value = File(picked.path);
       }
-    } catch (e, st) {
-      log('Image pick error: $e', name: 'ImagePicker');
-      log('StackTrace: $st', name: 'ImagePicker');
-    }
+    });
   }
 
   Future<void> _handleLostData() async {

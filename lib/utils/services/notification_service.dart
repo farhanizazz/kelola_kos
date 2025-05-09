@@ -1,7 +1,10 @@
 import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:kelola_kos/shared/models/request_status_enum.dart';
 import 'package:kelola_kos/shared/models/scheduled_notification.dart';
+import 'package:kelola_kos/shared/repositories/main_repository.dart';
 import 'package:kelola_kos/utils/services/local_storage_service.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -13,6 +16,8 @@ class NotificationService extends GetxService {
 
   NotificationService._internal();
 
+  static NotificationService get to => Get.find<NotificationService>();
+
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
@@ -23,7 +28,24 @@ class NotificationService extends GetxService {
         AndroidInitializationSettings('@mipmap/ic_launcher');
     final settings = InitializationSettings(android: androidSettings);
 
-    await _plugin.initialize(settings);
+    await _plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        final payload = response.payload ?? '';
+        switch (response.actionId) {
+          case 'ACCEPT_ACTION':
+            MainRepository.updateRequestStatus(payload, RequestStatus.accepted);
+            log("User accepted the request.");
+            break;
+          case 'DECLINE_ACTION':
+            MainRepository.updateRequestStatus(payload, RequestStatus.declined);
+            log("User declined the request.");
+            break;
+          default:
+            break;
+        }
+      },
+    );
 
     if (requestPermission) {
       await _plugin
@@ -67,7 +89,6 @@ class NotificationService extends GetxService {
         month: month,
         residentName: residentName,
         notificationInterval: notificationInterval,
-
       );
     } catch (e, st) {
       log('Failed to schedule notification: $e');
@@ -141,17 +162,51 @@ class NotificationService extends GetxService {
       if (notif.scheduledTime.isBefore(DateTime.now())) {
         final newTime = notif.scheduledTime.add(notif.recurrenceInterval);
         await NotificationService().schedulePaymentReminder(
-          id: notif.id,
-          residentName: notif.residentName,
-          day: newTime.day,
-          month: newTime.month,
-          notificationInterval: notif.recurrenceInterval
-        );
+            id: notif.id,
+            residentName: notif.residentName,
+            day: newTime.day,
+            month: newTime.month,
+            notificationInterval: notif.recurrenceInterval);
         await LocalStorageService.updateScheduledNotification(
             notif.id, newTime);
       }
     }
     log("Notification Schedule initialized successfully!",
         name: "Notification Schedule");
+  }
+
+  Future<void> showLocalFirebaseNotification(RemoteMessage message) async {
+    final isResponse = message.data['type'] == 'change_request_response' ? true : false;
+    AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+            'firebase_messaging_id', 'Firebase Messaging',
+            importance: Importance.max,
+            priority: Priority.high,
+            showWhen: true,
+            actions: isResponse ? null : [
+          const AndroidNotificationAction(
+            'ACCEPT_ACTION',
+            'Terima',
+            showsUserInterface: true,
+            cancelNotification: true,
+          ),
+          const AndroidNotificationAction(
+            'DECLINE_ACTION',
+            'Tolak',
+            showsUserInterface: true,
+            cancelNotification: true,
+          ),
+        ]);
+
+    NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails);
+
+    await _plugin.show(
+      message.notification.hashCode,
+      message.notification?.title ?? 'No Title',
+      message.notification?.body ?? 'No body',
+      notificationDetails,
+      payload: message.data['notificationId'],
+    );
   }
 }

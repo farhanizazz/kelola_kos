@@ -148,13 +148,13 @@ class ResidentListScreen extends StatelessWidget {
                         contentPadding: EdgeInsets.zero,
                         title: Text(resident.name),
                         subtitle: Text(
-                            "${GlobalService.dorms.firstWhere((dorm) => dorm.id == resident.dormId).name}, ${GlobalService.rooms.firstWhere((room) => room.id == resident.roomId).roomName}"),
+                            "${GlobalService.to.dorms.firstWhere((dorm) => dorm.id == resident.dormId).name}, ${GlobalService.to.rooms.firstWhere((room) => room.id == resident.roomId).roomName}"),
                         trailing: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              GlobalService.rooms
+                              GlobalService.to.rooms
                                   .firstWhere(
                                       (room) => room.id == resident.roomId)
                                   .price

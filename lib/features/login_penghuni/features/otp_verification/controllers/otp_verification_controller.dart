@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kelola_kos/utils/functions/safe_call.dart';
 
 class OtpVerificationController extends GetxController {
   final formKey = GlobalKey<FormState>();
@@ -19,18 +20,14 @@ class OtpVerificationController extends GetxController {
     final otp = otpCtrl.text.trim();
     log('OTP: $otp', name: 'OtpVerificationController');
 
-    try {
+    safeCall(() async {
       final credential = PhoneAuthProvider.credential(
         verificationId: verificationId,
         smsCode: otp,
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
-    } on FirebaseAuthException catch (e) {
-      Get.snackbar('Verification Failed', e.message ?? 'Unknown error.');
-    } catch (e) {
-      Get.snackbar('Error', 'An unexpected error occurred.');
-    }
+    });
   }
 
   static OtpVerificationController get to => Get.find();
