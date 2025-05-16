@@ -79,4 +79,9 @@ class Dorm {
       residents: residents ?? this.residents,
     );
   }
+
+  @override
+  String toString() {
+    return 'Dorm{id: $id, name: $name, location: $location, residentCount: $residentCount, roomCount: $roomCount, rooms: $rooms, residents: $residents, note: $note, image: $image}';
+  }
 }

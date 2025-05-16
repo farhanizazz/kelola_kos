@@ -89,10 +89,15 @@ class LoginScreen extends StatelessWidget {
                     ),
                   ),
                   12.verticalSpace,
-                  Text(
-                    'Lupa password?',
-                    style: Get.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.normal
+                  GestureDetector(
+                    onTap: () {
+                      Get.toNamed(Routes.forgotPasswordRoute);
+                    },
+                    child: Text(
+                      'Lupa password?',
+                      style: Get.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.normal
+                      ),
                     ),
                   ),
                   12.verticalSpace,

@@ -14,18 +14,14 @@ class DetailDormRepository {
   static const userId = 1;
 
   static Future<Dorm> getDorm(String id) async {
-    safeCall(() async {
-      return GlobalService.to.dorms.where((dorm) => dorm.id == id).first;
-    });
-    throw Exception('Dorm not found');
+    log(id, name: 'Dorm id in detail dorm repo');
+    log(GlobalService.to.dorms.toString());
+    return GlobalService.to.dorms.where((dorm) => dorm.id == id).first;
   }
 
   static Future<List<Room>> getRoom(String dormId) async {
-    safeCall(() async {
-      log(GlobalService.to.rooms.toString(), name: 'Room in detail room repo');
-      return GlobalService.to.rooms.where((room) => room.dormId == dormId).toList();
-    });
-    throw Exception('Room not found');
+    log(GlobalService.to.rooms.toString(), name: 'Room in detail room repo');
+    return GlobalService.to.rooms.where((room) => room.dormId == dormId).toList();
   }
 
   var apiConstant = DetailDormApiConstant();

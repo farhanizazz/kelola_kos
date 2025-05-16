@@ -117,39 +117,61 @@ class FirestoreService extends GetxService {
     }
   }
 
-  /// Deletes a document
   Future<bool> deleteDocument(String collectionPath, String docId, {bool showConfirmation = true}) async {
+    // Create a completer to properly handle the async flow
     final completer = Completer<bool>();
 
-    if(showConfirmation) {
+    bool shouldDelete = !showConfirmation; // Default to true if no confirmation needed
+
+    if (showConfirmation) {
       try {
+        // Use your existing showConfirmationBottomSheet implementation
         await showConfirmationBottomSheet(
           title: 'Apakah kamu yakin?',
           message: 'Tindakan ini akan menghapus item secara permanen.',
           onConfirm: () {
-            completer.complete(true);
+            // Only delete when confirmed
+            shouldDelete = true;
+
+            // Execute the delete operation when confirmed
+            _performDelete(collectionPath, docId).then((success) {
+              completer.complete(success);
+            });
           },
         );
+
+        // If not confirmed (user pressed Cancel), complete with false
+        if (!shouldDelete) {
+          _log('Delete operation cancelled for $collectionPath/$docId');
+          completer.complete(false);
+        }
       } catch (e) {
-        _log('Failed to show confirmation for deleting $collectionPath/$docId',
-            error: e);
+        _log('Failed to show confirmation for deleting $collectionPath/$docId', error: e);
         completer.complete(false);
       }
     } else {
-      completer.complete(true);
-    }
-    if(completer.isCompleted) {
-      try {
-        _showLoading();
-        await _firestore.collection(collectionPath).doc(docId).delete();
-        _log('Document deleted in $collectionPath/$docId');
-        _hideLoading();
-      } catch (e) {
-        _log('Failed to delete document in $collectionPath/$docId', error: e);
-      }
+      // No confirmation needed, proceed with deletion
+      _performDelete(collectionPath, docId).then((success) {
+        completer.complete(success);
+      });
     }
 
     return completer.future;
+  }
+
+// Helper method to perform the actual deletion
+  Future<bool> _performDelete(String collectionPath, String docId) async {
+    try {
+      _showLoading();
+      await _firestore.collection(collectionPath).doc(docId).delete();
+      _log('Document deleted in $collectionPath/$docId');
+      _hideLoading();
+      return true;
+    } catch (e) {
+      _log('Failed to delete document in $collectionPath/$docId', error: e);
+      _hideLoading(); // Make sure to hide loading even on error
+      return false;
+    }
   }
 
 

@@ -49,6 +49,7 @@ class LoginPenghuniController extends GetxController {
             codeSent: (String verificationId, int? resendToken) {
               Get.toNamed(Routes.otpVerification, arguments: {
                 'verificationId': verificationId,
+                'resendToken': resendToken,
                 'phone': phoneCtrl.text,
               });
               log('Code sent to ${phoneCtrl.text}',

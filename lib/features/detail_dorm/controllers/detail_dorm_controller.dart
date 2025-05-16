@@ -39,6 +39,7 @@ class DetailDormController extends GetxController {
   }
 
   Future<void> _getDorm() async {
+    log(id, name: 'Dorm id in detail dorm controller');
     safeCall(() async {
       dorm.value = await DetailDormRepository.getDorm(id);
       dorm.refresh();

@@ -78,14 +78,17 @@ class OtpVerificationScreen extends StatelessWidget {
                       Get.theme.textTheme.bodyMedium?.color?.withOpacity(0.5),
                   fontWeight: FontWeight.w500),
             ),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                'Kirim ulang kode',
-                style: Get.theme.textTheme.bodyMedium?.copyWith(
-                    color:
-                        Get.theme.colorScheme.primary,
-                    fontWeight: FontWeight.w500),
+            Obx(
+                () => TextButton(
+                onPressed: OtpVerificationController.to.resendCountdown.value > 0 ? null : () {
+                  OtpVerificationController.to.resendOTP();
+                },
+                child: Text(
+                  'Kirim ulang kode ${OtpVerificationController.to.resendCountdown.value > 0 ? '(${OtpVerificationController.to.resendCountdown.value}s)' : ''}',
+                  style: Get.theme.textTheme.bodyMedium?.copyWith(
+                      color: !(OtpVerificationController.to.resendCountdown.value > 0) ? Get.theme.colorScheme.primary : Get.theme.disabledColor,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
             ),
             Spacer(

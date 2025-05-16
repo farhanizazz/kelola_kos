@@ -12,6 +12,8 @@ import 'package:kelola_kos/features/dashboard/features/search/views/ui/search_sc
 import 'package:kelola_kos/features/detail_dorm/bindings/detail_dorm_binding.dart';
 import 'package:kelola_kos/features/detail_dorm/views/ui/detail_dorm_screen.dart';
 import 'package:kelola_kos/features/dorm_list/bindings/dorm_list_binding.dart';
+import 'package:kelola_kos/features/forgot_password/bindings/forgot_password_binding.dart';
+import 'package:kelola_kos/features/forgot_password/views/ui/forgot_password_screen.dart';
 import 'package:kelola_kos/features/login/bindings/login_binding.dart';
 import 'package:kelola_kos/features/login/views/ui/login_screen.dart';
 import 'package:kelola_kos/features/login_penghuni/bindings/login_penghuni_binding.dart';
@@ -94,6 +96,11 @@ abstract class Pages {
       name: Routes.otpVerification,
       page: () => OtpVerificationScreen(),
       binding: OtpVerificationBinding(),
+    ),
+    GetPage(
+      name: Routes.forgotPasswordRoute,
+      page: () => ForgotPasswordScreen(),
+      binding: ForgotPasswordBinding(),
     ),
     GetPage(
         name: Routes.navigationRoute,
