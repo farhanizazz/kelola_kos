@@ -5,6 +5,8 @@ import 'package:kelola_kos/utils/services/firebase_service.dart';
 import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
 import 'package:kelola_kos/utils/services/notification_service.dart';
+import 'package:kelola_kos/utils/services/pdf_service.dart';
+import 'package:kelola_kos/utils/services/supabase_service.dart';
 
 class GlobalBinding extends Bindings {
   @override
@@ -15,5 +17,7 @@ class GlobalBinding extends Bindings {
     Get.putAsync(() async => AuthService());
     Get.put(NotificationService());
     Get.put(FirebaseMessagingService());
+    Get.put(PdfService());
+    Get.put(SupabaseService());
   }
 }

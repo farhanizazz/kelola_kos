@@ -6,13 +6,18 @@ Future<void> showConfirmationBottomSheet({
   required String title,
   required String message,
   required VoidCallback onConfirm,
+  Color? backgroundColor,
+  Color? foregroundColor,
 }) async {
+  backgroundColor ??= Get.theme.colorScheme.errorContainer;
+  foregroundColor ??= Get.theme.colorScheme.onErrorContainer;
+
   Get.bottomSheet(
     Container(
       width: 1.sw,
       padding: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Get.theme.colorScheme.errorContainer,
+        color: backgroundColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -23,13 +28,13 @@ Future<void> showConfirmationBottomSheet({
           Text(
             title,
             style: Get.textTheme.headlineSmall
-                ?.copyWith(color: Get.theme.colorScheme.onErrorContainer),
+                ?.copyWith(color: foregroundColor),
           ),
           12.verticalSpace,
           Text(
             message,
             style: Get.textTheme.bodyMedium
-                ?.copyWith(color: Get.theme.colorScheme.onErrorContainer),
+                ?.copyWith(color: foregroundColor),
           ),
           20.verticalSpace,
           Row(
@@ -39,8 +44,8 @@ Future<void> showConfirmationBottomSheet({
                   onPressed: () => Get.back(),
                   child: Text("Batal"),
                   style: FilledButton.styleFrom(
-                    backgroundColor: Get.theme.colorScheme.onError,
-                    foregroundColor: Get.theme.colorScheme.onErrorContainer,
+                    backgroundColor: backgroundColor,
+                    foregroundColor: foregroundColor,
                   ),
                 ),
               ),

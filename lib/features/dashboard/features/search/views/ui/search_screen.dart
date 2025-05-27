@@ -86,7 +86,7 @@ class SearchScreen extends StatelessWidget {
                             }
                           },
                           child: FutureBuilder<String>(
-                            future: SupabaseService.getImage(dorm.image ?? ''),
+                            future: SupabaseService.to.getImage(dorm.image ?? ''),
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {

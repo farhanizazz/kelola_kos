@@ -11,6 +11,7 @@ class Resident {
   final int paymentMonth;
   final bool paymentStatus;
   final Duration recurrenceInterval;
+  final String? invoicePath;
 
   Resident({
     required this.paymentDay,
@@ -23,6 +24,7 @@ class Resident {
     required this.dormId,
     required this.paymentStatus,
     required this.recurrenceInterval,
+    this.invoicePath,
   });
 
   factory Resident.fromMap(Map<String, dynamic> data) {
@@ -36,7 +38,8 @@ class Resident {
       roomId: data['roomId'] ?? '',
       dormId: data['dormId'] ?? '',
       paymentStatus: data['paymentStatus'] ?? false,
-      recurrenceInterval: Duration(milliseconds: data['recurrenceInterval'])
+      recurrenceInterval: Duration(milliseconds: data['recurrenceInterval']),
+      invoicePath: data['invoicePath'],
     );
   }
 
@@ -51,7 +54,8 @@ class Resident {
       'paymentDay': paymentDay,
       'paymentMonth': paymentMonth,
       'paymentStatus': paymentStatus,
-      'recurrenceInterval': recurrenceInterval.inMilliseconds
+      'recurrenceInterval': recurrenceInterval.inMilliseconds,
+      'invoicePath': invoicePath,
     };
   }
 
@@ -70,6 +74,7 @@ class Resident {
         other.paymentDay == paymentDay &&
         other.paymentMonth == paymentMonth &&
         other.recurrenceInterval == recurrenceInterval &&
+        other.invoicePath == invoicePath &&
         other.paymentStatus == paymentStatus;
   }
 
@@ -84,11 +89,12 @@ class Resident {
     paymentMonth.hashCode ^
     dormId.hashCode ^
     recurrenceInterval.hashCode ^
+    invoicePath.hashCode ^
     paymentStatus.hashCode;
   }
 
   @override
   String toString() {
-    return 'Resident{id: $id, name: $name, phone: $phone, roomId: $roomId, dormId: $dormId, paymentDay: $paymentDay, paymentMonth: $paymentMonth, paymentStatus: $paymentStatus, recurrenceInterval: $recurrenceInterval}';
+    return 'Resident{id: $id, name: $name, phone: $phone, roomId: $roomId, dormId: $dormId, paymentDay: $paymentDay, paymentMonth: $paymentMonth, paymentStatus: $paymentStatus, recurrenceInterval: $recurrenceInterval, invoicePath: $invoicePath}';
   }
 }

@@ -48,6 +48,8 @@ class GlobalService extends GetxService {
     super.onInit();
   }
 
+
+
   void bindDormsStream() {
     log('Binding dorms with userId: $userId', name: 'DormStream');
     dorms.bindStream(
@@ -227,6 +229,8 @@ class _MainRepository {
 
     return rooms.map((room) => Room.fromMap(room)).toList();
   }
+
+
 }
 
 Future<void> requestExactAlarmPermission() async {

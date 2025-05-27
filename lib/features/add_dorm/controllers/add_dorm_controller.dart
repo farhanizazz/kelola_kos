@@ -51,7 +51,7 @@ class AddDormController extends GetxController {
       rooms.assignAll(
           GlobalService.to.rooms.where((room) => room.dormId == arguments.id));
       safeCall(() async {
-        final supabaseImageUrl = await SupabaseService.getImage(arguments.image ?? '');
+        final supabaseImageUrl = await SupabaseService.to.getImage(arguments.image ?? '');
         log(supabaseImageUrl, name: 'Supabase Image');
         imageUrl.value = supabaseImageUrl;
       });
@@ -174,7 +174,7 @@ class AddDormController extends GetxController {
           await firestore.updateDocument("Dorms", dormId, dormData);
         } else {
           final String imagePath =
-              await SupabaseService.uploadImage(dormImage.value!);
+              await SupabaseService.to.uploadImage(dormImage.value!);
           final dormData = {
             'userId': LocalStorageService.box.get(LocalStorageConstant.USER_ID),
             'name': dormNameController.text,

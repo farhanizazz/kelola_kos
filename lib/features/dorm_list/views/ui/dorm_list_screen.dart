@@ -47,7 +47,7 @@ class DormListScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final dorm = DormListController.to.dorms[index];
                     return FutureBuilder<String>(
-                        future: SupabaseService.getImage(dorm.image ?? ''),
+                        future: SupabaseService.to.getImage(dorm.image ?? ''),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {

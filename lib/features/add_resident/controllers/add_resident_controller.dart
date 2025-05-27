@@ -1,21 +1,30 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kelola_kos/constants/local_storage_constant.dart';
 import 'package:kelola_kos/features/add_resident/repositories/add_resident_repository.dart';
 import 'package:kelola_kos/features/resident_list/models/resident.dart';
 import 'package:kelola_kos/shared/models/dorm.dart';
 import 'package:kelola_kos/shared/models/room.dart';
 import 'package:kelola_kos/utils/functions/normalize_phone_number.dart';
 import 'package:kelola_kos/utils/functions/safe_call.dart';
+import 'package:kelola_kos/utils/functions/show_confirmation_bottom_sheet.dart';
 import 'package:kelola_kos/utils/functions/show_error_bottom_sheet.dart';
+import 'package:kelola_kos/utils/services/firestore_service.dart';
 import 'package:kelola_kos/utils/services/global_service.dart';
+import 'package:kelola_kos/utils/services/local_storage_service.dart';
+import 'package:kelola_kos/utils/services/pdf_service.dart';
+import 'package:kelola_kos/utils/services/supabase_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AddResidentController extends GetxController {
   final RxList<Dorm> dorms = GlobalService.to.dorms;
   final RxList<Room> rooms = <Room>[].obs;
   final RxString selectedDorm = ''.obs;
+  final FirestoreService firestoreClient = FirestoreService.to;
   final RxString selectedRoom = ''.obs;
   final TextEditingController residentNameController = TextEditingController();
   final TextEditingController residentPhoneController = TextEditingController();
@@ -23,7 +32,8 @@ class AddResidentController extends GetxController {
   final TextEditingController dormController = TextEditingController();
   final TextEditingController roomController = TextEditingController();
   final TextEditingController paymentDateController = TextEditingController();
-  final TextEditingController notificationIntervalController = TextEditingController();
+  final TextEditingController notificationIntervalController =
+      TextEditingController();
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final RxBool paymentStatus = false.obs;
   final RxBool isEdit = false.obs;
@@ -31,6 +41,8 @@ class AddResidentController extends GetxController {
   final RxnInt payDay = RxnInt(null);
   late final Map<String, dynamic> arguments;
   final Rx<Duration> notificationInterval = Duration(days: 30).obs;
+  final Rxn<Resident> resident = Rxn();
+  final RxBool isFinishedLoading = false.obs;
 
   @override
   Future<void> onInit() async {
@@ -40,25 +52,24 @@ class AddResidentController extends GetxController {
       arguments = Get.arguments;
       log(arguments.toString(), name: "Add resident argument");
     }
-    everAll([payDay, payMonth], (_)
-    {
+    everAll([payDay, payMonth], (_) {
       // You might want to add a check to avoid 0 values (initial state)
       if (payDay.value != null && payMonth.value != null) {
         paymentDateController.text =
-        "${AddResidentRepository.days[payDay.value!].toString().padLeft(2, '0')} ${AddResidentRepository.months[payMonth.value!]}";
+            "${AddResidentRepository.days[payDay.value!].toString().padLeft(2, '0')} ${AddResidentRepository.months[payMonth.value!]}";
       } else {
         paymentDateController.text = '';
       }
     });
     if (arguments['resident'] != null) {
       isEdit.value = true;
-      final Resident resident = arguments['resident'];
-      residentNameController.text = resident.name;
-      residentPhoneController.text = resident.phone;
-      paymentStatus.value = resident.paymentStatus;
-      payDay.value = resident.paymentDay - 1;
-      payMonth.value = resident.paymentMonth - 1;
-      notificationInterval.value = resident.recurrenceInterval;
+      resident.value = arguments['resident'];
+      residentNameController.text = resident.value!.name;
+      residentPhoneController.text = resident.value!.phone;
+      paymentStatus.value = resident.value!.paymentStatus;
+      payDay.value = resident.value!.paymentDay - 1;
+      payMonth.value = resident.value!.paymentMonth - 1;
+      notificationInterval.value = resident.value!.recurrenceInterval;
     }
     if (arguments['dormId'] != null && arguments['roomId'] != null) {
       log(arguments.toString(), name: "Add resident argument");
@@ -69,6 +80,14 @@ class AddResidentController extends GetxController {
       roomController.text =
           rooms.firstWhere((room) => room.id == arguments['roomId']!).roomName;
     }
+    isFinishedLoading.value = true;
+  }
+
+  @override
+  void onReady() {
+    // TODO: implement onReady
+    super.onReady();
+    ever(paymentStatus, askForInvoice);
   }
 
   Future<void> _getRoom(String dormId) async {
@@ -119,18 +138,18 @@ class AddResidentController extends GetxController {
   Future<void> addResident() async {
     if (_validateForm()) {
       final resident = Resident(
-        id: normalizePhoneNumber(residentPhoneController.text),
-        name: residentNameController.text,
-        phone: residentPhoneController.text,
-        roomId: selectedRoom.value,
-        dormId: selectedDorm.value,
-        paymentMonth: payMonth.value! + 1,
-        paymentDay: payDay.value! + 1,
-        paymentStatus: paymentStatus.value,
-        recurrenceInterval: notificationInterval.value,
-        ownerId: ''
-      );
-      if ((selectedDorm.value == '' || selectedRoom.value == '') && GlobalService.to.selectedResident.value == null) {
+          id: normalizePhoneNumber(residentPhoneController.text),
+          name: residentNameController.text,
+          phone: residentPhoneController.text,
+          roomId: selectedRoom.value,
+          dormId: selectedDorm.value,
+          paymentMonth: payMonth.value! + 1,
+          paymentDay: payDay.value! + 1,
+          paymentStatus: paymentStatus.value,
+          recurrenceInterval: notificationInterval.value,
+          ownerId: '');
+      if ((selectedDorm.value == '' || selectedRoom.value == '') &&
+          GlobalService.to.selectedResident.value == null) {
         showErrorBottomSheet(
             "Error", "Tolong pilih kos atau ruangan yang akan ditempati");
         return;
@@ -139,15 +158,16 @@ class AddResidentController extends GetxController {
         if (Get.arguments != null) {
           final Resident? currentResident = arguments['resident'];
           if (currentResident != null) {
-            if(GlobalService.to.selectedResident.value != null) {
+            if (GlobalService.to.selectedResident.value != null) {
               await AddResidentRepository.requestUpdateResident(
                 dormId: selectedDorm.value,
                 roomId: selectedRoom.value,
                 residentId: normalizePhoneNumber(currentResident.id),
                 oldResidentData: Get.arguments['resident'],
-                newResidentData: resident
+                newResidentData: resident,
               );
             } else {
+
               await AddResidentRepository.updateResident(
                 dormId: selectedDorm.value,
                 roomId: selectedRoom.value,
@@ -177,6 +197,48 @@ class AddResidentController extends GetxController {
         }
         GlobalService.to.residents.refresh();
       });
+    }
+  }
+
+  Future<void> askForInvoice(bool isPaid) async {
+    safeCall(() async {
+      if (isPaid && isFinishedLoading.value) {
+        log(isFinishedLoading.value.toString());
+        await firestoreClient.setDocument('Residents', resident.value?.id, {
+          'paymentStatus': paymentStatus.value
+        });
+        await showConfirmationBottomSheet(
+          title: "Buat Invoice",
+          message: 'Apakah anda mau membuat invoice untuk penghuni ini?',
+          onConfirm: () async {
+            final residentRoom = GlobalService.to.rooms.firstWhere((room) => resident.value!.roomId == room.id);
+            final file = await PdfService.to.generatePDF(
+              residentName: residentNameController.text,
+              ownerName: LocalStorageService.box.get(LocalStorageConstant.NAME),
+              roomNumber: residentRoom.roomName,
+              rentAmount: residentRoom.price.toDouble(),
+              paymentDate: paymentDateController.text,
+              paymentMethod: 'Transfer',
+              invoiceNumber: 'INV-${DateTime.now().millisecondsSinceEpoch}',
+              status: 'Lunas',
+            );
+            SupabaseService.to.uploadInvoice(File(file), resident.value!);
+          },
+          backgroundColor: Get.theme.colorScheme.surfaceContainer,
+          foregroundColor: Get.theme.colorScheme.onSurface,
+        );
+      } else {
+        await firestoreClient.setDocument('Residents', resident.value?.id, {
+          'paymentStatus': paymentStatus.value
+        });
+      }
+    });
+
+  }
+  Future<void> launchPdf() async {
+    final url = Uri.parse('https://orjhwzjkyynnhbpiexlw.supabase.co/storage/v1/object/public/${resident.value?.invoicePath}');
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
     }
   }
 

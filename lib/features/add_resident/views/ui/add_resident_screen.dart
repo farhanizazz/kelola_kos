@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,8 +18,8 @@ class AddResidentScreen extends StatelessWidget {
       bottomNavigationBar: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 12),
         child: FilledButton(
-          onPressed: () {
-            AddResidentController.to.addResident();
+          onPressed: () async {
+            await AddResidentController.to.addResident();
           },
           child: Obx(() => Text(AddResidentController.to.isEdit.value
               ? 'Ubah Penghuni'.tr
@@ -65,7 +64,8 @@ class AddResidentScreen extends StatelessWidget {
                           decoration: InputDecoration(
                             label: Text('Nama Penghuni'.tr),
                           ),
-                          controller: AddResidentController.to.residentNameController,
+                          controller:
+                              AddResidentController.to.residentNameController,
                           validator: AddResidentController.to.validateField,
                         ),
                         12.verticalSpace,
@@ -76,7 +76,8 @@ class AddResidentScreen extends StatelessWidget {
                     decoration: InputDecoration(
                       label: Text('Nomor Telepon Penghuni'.tr),
                     ),
-                    controller: AddResidentController.to.residentPhoneController,
+                    controller:
+                        AddResidentController.to.residentPhoneController,
                     validator: AddResidentController.to.validateField,
                   ),
                   Visibility(
@@ -87,18 +88,20 @@ class AddResidentScreen extends StatelessWidget {
                           children: [
                             12.verticalSpace,
                             DropdownMenu(
-                              controller: AddResidentController.to.dormController,
+                              controller:
+                                  AddResidentController.to.dormController,
                               width: constraint.maxWidth,
                               initialSelection: null,
                               label: Text('Kos'),
-                              dropdownMenuEntries: AddResidentController.to.dorms
-                                  .map(
-                                    (dorm) => DropdownMenuEntry(
-                                      value: dorm.id,
-                                      label: dorm.name,
-                                    ),
-                                  )
-                                  .toList(),
+                              dropdownMenuEntries:
+                                  AddResidentController.to.dorms
+                                      .map(
+                                        (dorm) => DropdownMenuEntry(
+                                          value: dorm.id,
+                                          label: dorm.name,
+                                        ),
+                                      )
+                                      .toList(),
                               onSelected: (value) {
                                 if (value != null) {
                                   AddResidentController.to.changeDorm(value);
@@ -118,18 +121,20 @@ class AddResidentScreen extends StatelessWidget {
                           12.verticalSpace,
                           LayoutBuilder(builder: (context, constraint) {
                             return DropdownMenu(
-                              controller: AddResidentController.to.roomController,
+                              controller:
+                                  AddResidentController.to.roomController,
                               width: constraint.maxWidth,
                               initialSelection: null,
                               label: Text('Ruangan'.tr),
-                              dropdownMenuEntries: AddResidentController.to.rooms
-                                  .map(
-                                    (room) => DropdownMenuEntry(
-                                      value: room.id,
-                                      label: room.roomName,
-                                    ),
-                                  )
-                                  .toList(),
+                              dropdownMenuEntries:
+                                  AddResidentController.to.rooms
+                                      .map(
+                                        (room) => DropdownMenuEntry(
+                                          value: room.id,
+                                          label: room.roomName,
+                                        ),
+                                      )
+                                      .toList(),
                               onSelected: (value) {
                                 if (value != null) {
                                   AddResidentController.to.changeRoom(value);
@@ -189,8 +194,8 @@ class AddResidentScreen extends StatelessWidget {
                                               selectedDay = selectedItem;
                                             },
                                             children: List<Widget>.generate(
-                                                AddResidentRepository.days.length,
-                                                (int index) {
+                                                AddResidentRepository
+                                                    .days.length, (int index) {
                                               return Center(
                                                   child: Text(
                                                       AddResidentRepository
@@ -220,8 +225,8 @@ class AddResidentScreen extends StatelessWidget {
                                               selectedMonth = selectedItem;
                                             },
                                             children: List<Widget>.generate(
-                                                AddResidentRepository
-                                                    .months.length, (int index) {
+                                                AddResidentRepository.months
+                                                    .length, (int index) {
                                               return Center(
                                                   child: Text(
                                                       AddResidentRepository
@@ -239,8 +244,8 @@ class AddResidentScreen extends StatelessWidget {
                                       onPressed: () {
                                         AddResidentController.to.payDay.value =
                                             selectedDay;
-                                        AddResidentController.to.payMonth.value =
-                                            selectedMonth;
+                                        AddResidentController
+                                            .to.payMonth.value = selectedMonth;
                                         Get.back();
                                       },
                                       child: Text('Simpan'.tr)),
@@ -259,23 +264,37 @@ class AddResidentScreen extends StatelessWidget {
                       children: [
                         12.verticalSpace,
                         TextFormField(
-                          decoration: InputDecoration(hintText: "Catatan (Optional)".tr),
+                          decoration: InputDecoration(
+                              hintText: "Catatan (Optional)".tr),
                           maxLines: 5,
                         ),
                         12.verticalSpace,
                         Obx(
-                              () => Visibility(
+                          () => Visibility(
                             visible: AddResidentController.to.isEdit.value,
                             child: Row(
                               children: [
                                 Switch(
-                                    value: AddResidentController.to.paymentStatus.value,
+                                    value: AddResidentController
+                                        .to.paymentStatus.value,
                                     onChanged: (value) {
-                                      AddResidentController.to.paymentStatus.value =
-                                      !AddResidentController.to.paymentStatus.value;
+                                      AddResidentController
+                                              .to.paymentStatus.value =
+                                          !AddResidentController
+                                              .to.paymentStatus.value;
                                     }),
                                 5.horizontalSpace,
-                                Text('Status Pembayaran'.tr)
+                                Text('Status Pembayaran'.tr),
+                                Spacer(),
+                                Visibility(
+                                  visible: (AddResidentController.to.resident.value?.invoicePath ?? '') != '',
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      AddResidentController.to.launchPdf();
+                                    },
+                                    child: Text("Lihat Invoice"),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -290,9 +309,11 @@ class AddResidentScreen extends StatelessWidget {
                       LayoutBuilder(builder: (context, constraint) {
                         return Obx(
                           () => DropdownMenu(
-                            controller: AddResidentController.to.notificationIntervalController,
+                            controller: AddResidentController
+                                .to.notificationIntervalController,
                             width: constraint.maxWidth,
-                            initialSelection: AddResidentController.to.notificationInterval.value,
+                            initialSelection: AddResidentController
+                                .to.notificationInterval.value,
                             label: Text('Ingatkan Setiap'),
                             dropdownMenuEntries: [
                               DropdownMenuEntry(
