@@ -49,6 +49,7 @@ class AuthService extends GetxService {
       if (user == null) {
         Get.offAllNamed(Routes.loginRoute);
         GlobalService.to.unbindStreams();
+        Get.delete<GlobalService>();
         await LocalStorageService.deleteAuth();
         await Workmanager().cancelAll().then((value) {
           log('Workmanager Cancelled');
@@ -57,7 +58,9 @@ class AuthService extends GetxService {
           resident.value = null;
         }
         if(GlobalService.to.selectedResident.value != null) {
+          log(GlobalService.to.selectedResident.value.toString(), name: "Selected Resident before");
           GlobalService.to.selectedResident.value = null;
+          log(GlobalService.to.selectedResident.value.toString(), name: "Selected Resident after");
         }
         FirebaseMessagingService.to.disposeFCM();
         LocalStorageService.clearNotifications();
@@ -67,11 +70,14 @@ class AuthService extends GetxService {
           if (user == null) return;
 
           // Check if the user authenticated via phone number
-          bool isPhoneAuth =
-              user.providerData.any((info) => info.providerId == 'phone');
+          log('Checking if phone auth...', name: 'AuthCheck');
+
+          bool isPhoneAuth = user.providerData.any((info) => info.providerId == 'phone');
+          log('isPhoneAuth evaluated to: $isPhoneAuth', name: 'AuthCheck');
 
           if (isPhoneAuth) {
-            GlobalService.to.bindResidentByPhoneNumberStream(user.phoneNumber!);
+            await GlobalService.to.bindResidentByPhoneNumberStream(user.phoneNumber!);
+            log('User authenticated via phone number', name: 'Auth');
             final doc = await firestoreClient.getDocument(
                 'Residents', user.phoneNumber!);
             resident.value =

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,7 +21,7 @@ class ResidentListScreen extends StatelessWidget {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'tambah_penghuni',
-        icon: Icon(Icons.add),
+        icon: const Icon(Icons.add),
         label: Text("Tambah Penghuni".tr),
         onPressed: () {
           Get.toNamed(Routes.addResidentRoute);
@@ -49,7 +51,7 @@ class ResidentListScreen extends StatelessWidget {
                         onChanged: (v) {
                           ResidentListController.to.selectedCategory(v);
                         },
-                        iconStyleData: IconStyleData(),
+                        iconStyleData: const IconStyleData(),
                         buttonStyleData: ButtonStyleData(
                           padding: const EdgeInsets.only(right: 14),
                           decoration: BoxDecoration(
@@ -100,7 +102,7 @@ class ResidentListScreen extends StatelessWidget {
               Obx(
                 () => ListView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: ResidentListController.to.residents.length,
                   itemBuilder: (context, index) {
                     final Resident resident =
@@ -114,7 +116,7 @@ class ResidentListScreen extends StatelessWidget {
                         final selectedValue = await showMenu(
                           context: context,
                           position: RelativeRect.fromRect(
-                            details.globalPosition & Size(40, 40),
+                            details.globalPosition & const Size(40, 40),
                             // Position where the user tapped
                             Offset.zero & overlay.size,
                           ),

@@ -59,6 +59,35 @@ class Resident {
     };
   }
 
+  Resident copyWith({
+    String? id,
+    String? ownerId,
+    String? name,
+    String? phone,
+    String? roomId,
+    String? dormId,
+    int? paymentDay,
+    int? paymentMonth,
+    bool? paymentStatus,
+    Duration? recurrenceInterval,
+    String? invoicePath,
+  }) {
+    return Resident(
+      id: id ?? this.id,
+      ownerId: ownerId ?? this.ownerId,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      roomId: roomId ?? this.roomId,
+      dormId: dormId ?? this.dormId,
+      paymentDay: paymentDay ?? this.paymentDay,
+      paymentMonth: paymentMonth ?? this.paymentMonth,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      recurrenceInterval: recurrenceInterval ?? this.recurrenceInterval,
+      invoicePath: invoicePath ?? this.invoicePath,
+    );
+  }
+
+
   /// Equality override
   @override
   bool operator ==(Object other) {

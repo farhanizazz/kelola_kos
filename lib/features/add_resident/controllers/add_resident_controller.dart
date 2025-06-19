@@ -222,7 +222,9 @@ class AddResidentController extends GetxController {
               invoiceNumber: 'INV-${DateTime.now().millisecondsSinceEpoch}',
               status: 'Lunas',
             );
-            SupabaseService.to.uploadInvoice(File(file), resident.value!);
+            final pdfPath = await SupabaseService.to.uploadInvoice(File(file), resident.value!);
+            resident.value = resident.value?.copyWith(invoicePath: pdfPath);
+
           },
           backgroundColor: Get.theme.colorScheme.surfaceContainer,
           foregroundColor: Get.theme.colorScheme.onSurface,

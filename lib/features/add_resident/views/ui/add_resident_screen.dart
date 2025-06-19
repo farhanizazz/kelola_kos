@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,6 +16,7 @@ class AddResidentScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log(GlobalService.to.selectedResident.value.toString(), name: 'Selected resident');
     return Scaffold(
       bottomNavigationBar: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16).copyWith(bottom: 12),
@@ -286,13 +289,15 @@ class AddResidentScreen extends StatelessWidget {
                                 5.horizontalSpace,
                                 Text('Status Pembayaran'.tr),
                                 Spacer(),
-                                Visibility(
-                                  visible: (AddResidentController.to.resident.value?.invoicePath ?? '') != '',
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      AddResidentController.to.launchPdf();
-                                    },
-                                    child: Text("Lihat Invoice"),
+                                Obx(
+                                    () => Visibility(
+                                    visible: (AddResidentController.to.resident.value?.invoicePath ?? '') != '',
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        AddResidentController.to.launchPdf();
+                                      },
+                                      child: Text("Lihat Invoice"),
+                                    ),
                                   ),
                                 ),
                               ],

@@ -23,10 +23,15 @@ class GlobalService extends GetxService {
   RxList<Resident> residents = <Resident>[].obs;
   RxList<Room> rooms = <Room>[].obs;
   RxList<ChangeRequest> changeRequests = <ChangeRequest>[].obs;
+
   /// Holds the currently logged-in resident, identified by their phone number.
   ///
   /// This value is populated after a successful login via phone number authentication. Refer to auth_service.dart to see the binding
   Rxn<Resident> selectedResident = Rxn<Resident>();
+
+  void deleteSelectedResident() {
+    selectedResident.value = null;
+  }
 
   final FirestoreService firestoreClient = FirestoreService();
 
@@ -45,12 +50,16 @@ class GlobalService extends GetxService {
     ever(changeRequests, (value) {
       log(changeRequests.toString(), name: 'GlobalService ChangeRequest');
     });
+    ever(selectedResident, (value) {
+      log(selectedResident.value.toString(), name: 'GlobalService SelectedResident');
+    });
     super.onInit();
   }
 
 
 
   void bindDormsStream() {
+
     log('Binding dorms with userId: $userId', name: 'DormStream');
     dorms.bindStream(
       firestoreClient
@@ -166,8 +175,9 @@ class GlobalService extends GetxService {
     }
   }
 
-  void bindResidentByPhoneNumberStream(String phoneNumber) {
-    safeCall(() async {
+  Future<void> bindResidentByPhoneNumberStream(String phoneNumber) async {
+    log('bindResidentByPhoneNumberStream() was CALLED', name: 'GlobalService');
+    await safeCall(() async {
       selectedResident.bindStream(firestoreClient
           .collection('Residents')
           .doc(phoneNumber)
@@ -176,6 +186,7 @@ class GlobalService extends GetxService {
             final data = snapshot.data() as Map<String, dynamic>;
         final Resident resident =
             Resident.fromMap(snapshot.data() as Map<String, dynamic>);
+            log('Resident data received: ${resident.toMap()}', name: 'bindResidentByPhoneNumberStream');
         return resident;
       }));
     });
@@ -186,10 +197,12 @@ class GlobalService extends GetxService {
       dorms.close();
       rooms.close();
       residents.close();
+      selectedResident.close();
 
       dorms = <Dorm>[].obs;
       rooms = <Room>[].obs;
       residents = <Resident>[].obs;
+      selectedResident = Rxn<Resident>();
 
       log('Streams unbound and data cleared.', name: 'GlobalService');
     } catch (e, st) {

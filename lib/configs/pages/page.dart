@@ -6,6 +6,8 @@ import 'package:kelola_kos/features/add_dorm/views/ui/add_dorm_screen.dart';
 import 'package:kelola_kos/features/add_resident/bindings/add_resident_binding.dart';
 import 'package:kelola_kos/features/add_resident/views/ui/add_resident_screen.dart';
 import 'package:kelola_kos/features/add_room/bindings/add_room_binding.dart';
+import 'package:kelola_kos/features/add_ticket/bindings/add_ticket_binding.dart';
+import 'package:kelola_kos/features/add_ticket/views/ui/add_ticket_screen.dart';
 import 'package:kelola_kos/features/dashboard/bindings/dashboard_binding.dart';
 import 'package:kelola_kos/features/dashboard/features/search/bindings/search_binding.dart';
 import 'package:kelola_kos/features/dashboard/features/search/views/ui/search_screen.dart';
@@ -51,6 +53,11 @@ abstract class Pages {
         name: Routes.registerRoute,
         page: () => RegisterScreen(),
         binding: RegisterBinding(),
+    ),
+    GetPage(
+      name: Routes.addTicketRoute,
+      page: () => AddTicketScreen(),
+      binding: AddTicketBinding(),
     ),
     GetPage(
         name: Routes.addDormRoute,

@@ -104,7 +104,7 @@ class NotificationService extends GetxService {
     required Duration notificationInterval,
   }) async {
     DateTime now = DateTime.now();
-    DateTime targetDate = DateTime(now.year, month, day, 14, 40);
+    DateTime targetDate = DateTime(now.year, month, day, 15, 40);
 
     if (targetDate.isBefore(now)) {
       targetDate = DateTime(now.year + 1, month, day, 14, 40);
