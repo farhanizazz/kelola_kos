@@ -55,11 +55,6 @@ abstract class Pages {
         binding: RegisterBinding(),
     ),
     GetPage(
-      name: Routes.addTicketRoute,
-      page: () => AddTicketScreen(),
-      binding: AddTicketBinding(),
-    ),
-    GetPage(
         name: Routes.addDormRoute,
         page: () => AddDormScreen(),
         binding: AddDormBinding(),

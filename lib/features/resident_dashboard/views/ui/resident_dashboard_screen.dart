@@ -82,19 +82,6 @@ class ResidentDashboardScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(
-                width: 1.sw,
-                child: TextButton(
-                  onPressed: () {
-                    Get.toNamed(Routes.addTicketRoute, arguments: {
-                      'resident': GlobalService.to.selectedResident.value,
-                    });
-                  },
-                  child: Text(
-                    'Ada masalah dikamarmu? Buat ticket',
-                  ),
-                ),
-              ),
               Obx(
                 () => Visibility(
                   visible: GlobalService

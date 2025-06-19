@@ -14,5 +14,4 @@ abstract class Routes {
   static const String otpVerification = '/otp_verification';
   static const String notificationRoute = '/notification';
   static const String forgotPasswordRoute = '/forgot_password';
-  static const String addTicketRoute = '/add_ticket';
 }
